@@ -201,6 +201,17 @@
 .tf-stamp {
   animation: tf-stamp 220ms ease-out both;
 }
+@keyframes tf-grow {
+  from {
+    transform: translateY(-50%) scaleX(0);
+  }
+  to {
+    transform: translateY(-50%) scaleX(1);
+  }
+}
+.tf-grow {
+  animation: tf-grow 900ms ease-out both;
+}
 @keyframes tf-slide-in {
   from {
     opacity: 0;
