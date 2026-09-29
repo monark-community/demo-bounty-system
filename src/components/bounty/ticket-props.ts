@@ -19,8 +19,8 @@ export function ticketProps(
 ): TicketProps {
   const status = displayStatus(b, now)
   const winner = b.winnerSubmissionId ? b.submissions.find((x) => x.id === b.winnerSubmissionId) : undefined
-  const winnerName = winner ? nameOf(s, winner.personId, labels.you) : ""
-  const poster = nameOf(s, b.posterId, labels.you)
+  const winnerName = winner ? nameOf(s, winner.personId, labels.youInline) : ""
+  const poster = nameOf(s, b.posterId, labels.youInline)
   const deadline =
     status === "paid"
       ? t(copy.paidTo, { name: winnerName })

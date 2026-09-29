@@ -26,9 +26,9 @@ export type SubmitBlock = "own" | "closed" | "paid" | "cancelled" | "visibility"
 /** Why the visitor can't submit to this bounty, or null if they can. */
 export function submitBlock(s: DemoState, b: Bounty, now = Date.now()): SubmitBlock {
   const you = personById(s, s.youId)
-  if (b.posterId === s.youId) return "own"
   if (b.status === "paid") return "paid"
   if (b.status === "cancelled") return "cancelled"
+  if (b.posterId === s.youId) return "own"
   if (isClosed(b, now)) return "closed"
   if (b.visibility === "ambassadors" && !you?.roles.includes("ambassador")) return "visibility"
   if (b.visibility === "members" && !you?.roles.includes("member")) return "visibility"

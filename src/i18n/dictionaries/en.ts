@@ -90,6 +90,8 @@ const en = {
     locked: "locked",
     reward: "Reward",
     you: "You",
+    /** "You" in the middle of a sentence. */
+    youInline: "you",
     points: "{n} pts",
   },
 
@@ -199,7 +201,7 @@ const en = {
         "The poster can't spend the reward elsewhere while people are working.",
         "Cancelling is only possible while no submission is waiting for a decision.",
       ],
-      diagram: { poster: "Poster's wallet", escrow: "Bounty escrow", contributor: "Approved contributor", refund: "Refund if cancelled", lock: "Lock", release: "Release on approval" },
+      diagram: { poster: "Poster's wallet", escrow: "Bounty escrow", contributor: "Approved contributor", refund: "Refund if cancelled", lock: "Lock", release: "Release" },
     },
     decide: {
       title: "Two ways to decide",
@@ -508,7 +510,7 @@ const en = {
       submissions: { zero: "No submissions", one: "1 submission", other: "{n} submissions" },
       yourBounty: "Your bounty",
       youSubmitted: "You submitted",
-      locked: "Locked in escrow",
+      locked: "Locked",
       open: "Open bounty: {title}",
     },
     bounty: {
@@ -601,13 +603,26 @@ const en = {
         kinds: {
           posted: "{name} posted the bounty and locked {amount}",
           submitted: "{name} submitted work",
-          approved: "{name} approved {who}'s submission",
-          rejected: "{name} rejected {who}'s submission",
-          vote_approve: "{name} voted to approve {who}",
-          vote_reject: "{name} voted to reject {who}",
+          approved: "{name} approved {sub}",
+          rejected: "{name} rejected {sub}",
+          vote_approve: "{name} voted to approve {sub}",
+          vote_reject: "{name} voted to reject {sub}",
           paid: "Escrow paid {amount} to {name}",
           cancelled: "{name} cancelled and was refunded {amount}",
         },
+        /** Same events when you are the actor. */
+        kindsYou: {
+          posted: "You posted the bounty and locked {amount}",
+          submitted: "You submitted work",
+          approved: "You approved {sub}",
+          rejected: "You rejected {sub}",
+          vote_approve: "You voted to approve {sub}",
+          vote_reject: "You voted to reject {sub}",
+          paid: "Escrow paid {amount} to you",
+          cancelled: "You cancelled and were refunded {amount}",
+        },
+        subOf: "{who}'s submission",
+        subYours: "your submission",
       },
     },
     submit: {

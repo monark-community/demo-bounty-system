@@ -82,7 +82,7 @@ export function EscrowRail({
       {winner ? (
         <Party party={winner} align="end" highlight={released} />
       ) : (
-        <div className="flex w-[4.5rem] shrink-0 flex-col items-end gap-1 text-right sm:w-32">
+        <div className="flex w-[4.5rem] shrink-0 flex-col items-end gap-1 text-right sm:w-44">
           <span className="flex size-9 items-center justify-center rounded-full border border-dashed border-input text-muted-foreground">
             <UserRoundIcon className="size-4" aria-hidden="true" />
           </span>
@@ -118,7 +118,7 @@ function Party({ party, align, highlight }: { party: RailParty; align: "start" |
   return (
     <div
       className={cn(
-        "flex w-[4.5rem] shrink-0 flex-col gap-1 sm:w-32",
+        "flex w-[4.5rem] shrink-0 flex-col gap-1 sm:w-44",
         align === "end" ? "items-end text-right" : "items-start text-left"
       )}
     >

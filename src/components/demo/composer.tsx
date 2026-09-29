@@ -414,6 +414,7 @@ export function Composer() {
             submissions={plural(app.ticket.submissions, 0, locale)}
             flag={app.ticket.yourBounty}
             as="h3"
+            compact
             className={cn(busy && "border-dashed border-primary")}
           />
         </aside>

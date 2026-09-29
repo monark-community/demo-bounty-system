@@ -312,3 +312,37 @@ export function createSeed(copy: SeedCopy, locale: "en" | "fr"): DemoState {
     settings: { slow: false, failNext: false },
   }
 }
+
+/**
+ * Re-translate the example content after a language switch, keeping every
+ * change the visitor made (statuses, votes, their own bounties).
+ */
+export function localizeSeed(state: DemoState, copy: SeedCopy, locale: "en" | "fr"): DemoState {
+  if (state.seededLocale === locale) return state
+  const fresh = createSeed(copy, locale)
+  const bounties = state.bounties.map((b) => {
+    const f = fresh.bounties.find((x) => x.id === b.id)
+    if (!f) return b
+    return {
+      ...b,
+      title: f.title,
+      description: f.description,
+      criteria: f.criteria,
+      skills: f.skills,
+      org: f.org,
+      submissions: b.submissions.map((s) => {
+        const fs = f.submissions.find((x) => x.id === s.id)
+        return {
+          ...s,
+          note: fs ? fs.note : s.note,
+          votes: s.votes.map((v) => {
+            const fv = fs?.votes.find((x) => x.personId === v.personId)
+            return fv && v.note ? { ...v, note: fv.note } : v
+          }),
+        }
+      }),
+    }
+  })
+  const people = state.people.map((p) => (p.id === state.youId ? { ...p, name: copy.you } : p))
+  return { ...state, seededLocale: locale, bounties, people, wallet: { ...state.wallet, name: copy.you } }
+}

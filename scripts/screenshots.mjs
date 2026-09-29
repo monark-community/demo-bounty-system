@@ -1,14 +1,76 @@
 // Visual check of every page and key flow with Playwright.
-// Usage: pnpm build && pnpm start   (in another terminal)
-//        pnpm screenshots            (BASE_URL defaults to http://localhost:3000)
+// Usage: pnpm build && pnpm start -p 3137   (in another terminal)
+//        BASE_URL=http://localhost:3137 pnpm screenshots
 // Output: docs/screenshots/<locale>-<width>-<theme>-<name>.png
 import { mkdir } from "node:fs/promises"
 import { fileURLToPath } from "node:url"
 import { chromium } from "playwright"
 
-const BASE = process.env.BASE_URL ?? "http://localhost:3000"
+// Base URL: first argument, BASE_URL, or localhost:3000.
+const BASE = process.argv[2] ?? process.env.BASE_URL ?? "http://localhost:3000"
 const OUT = fileURLToPath(new URL("../docs/screenshots/", import.meta.url))
-const ONLY = process.env.ONLY // optional filter on the variant name
+const ONLY = process.env.ONLY // optional filter on "<locale>-<width>-<theme>"
+
+const L = {
+  en: {
+    connect: "Connect demo wallet",
+    confirm: "Confirm",
+    reject: "Reject",
+    menu: "Open menu",
+    controls: "Demo controls",
+    failNext: "Make the next transaction fail",
+    post: "Post a bounty",
+    publish: /^Lock .* and publish$/,
+    submitWork: "Submit your work",
+    sendWork: "Submit work",
+    posterRejects: "Poster rejects",
+    approvePay: "Approve and pay",
+    rejectBtn: "Reject",
+    rejectSend: "Reject with this reason",
+    voteApprove: "Vote approve",
+    criteria: "My work meets the acceptance criteria",
+    link: "Link to your work",
+    note: "Note for the reviewer",
+    title: "Title",
+    description: "Description",
+    criteriaField: "Acceptance criteria",
+    amount: "Reward",
+    reason: "Reason",
+    paidHeading: "Paid",
+    board: "Bounty board",
+    releasedTo: /^Released to /,
+    quorumReached: "Quorum reached",
+  },
+  fr: {
+    connect: "Connecter le portefeuille de démo",
+    confirm: "Confirmer",
+    reject: "Refuser",
+    menu: "Ouvrir le menu",
+    controls: "Réglages de la démo",
+    failNext: "Faire échouer la prochaine transaction",
+    post: "Publier une prime",
+    publish: /^Bloquer .* et publier$/,
+    submitWork: "Soumettre votre travail",
+    sendWork: "Soumettre le travail",
+    posterRejects: "L'auteur refuse",
+    approvePay: "Approuver et payer",
+    rejectBtn: "Refuser",
+    rejectSend: "Refuser avec cette raison",
+    voteApprove: "Voter pour",
+    criteria: "Mon travail respecte les critères d'acceptation",
+    link: "Lien vers votre travail",
+    note: "Note pour l'évaluation",
+    title: "Titre",
+    description: "Description",
+    criteriaField: "Critères d'acceptation",
+    amount: "Récompense",
+    reason: "Raison",
+    paidHeading: "Payée",
+    board: "Tableau des primes",
+    releasedTo: /^Versé à /,
+    quorumReached: "Quorum atteint",
+  },
+}
 
 const widths = { 390: { width: 390, height: 844 }, 1440: { width: 1440, height: 900 } }
 const variants = []
@@ -29,29 +91,71 @@ async function newPage(browser, { locale, w, theme }) {
     } catch {}
   }, theme)
   const page = await context.newPage()
+  page.on("pageerror", (e) => console.log("  ! pageerror", e.message))
   return { context, page }
 }
 
 const shot = async (page, v, name, fullPage = false) => {
   const file = `${OUT}${v.locale}-${v.w}-${v.theme}-${name}.png`
-  await page.waitForTimeout(250)
+  if (fullPage) {
+    // Walk down the page so lazy images load, then come back to the top.
+    await page.evaluate(async () => {
+      for (let y = 0; y < document.body.scrollHeight; y += 600) {
+        window.scrollTo(0, y)
+        await new Promise((r) => setTimeout(r, 60))
+      }
+      window.scrollTo(0, 0)
+    })
+  }
+  await page.waitForTimeout(300)
   await page.screenshot({ path: file, fullPage })
   console.log("  ✓", `${v.locale}-${v.w}-${v.theme}-${name}`)
 }
 
 const isMobile = (v) => v.w < 768
+const t = (v) => L[v.locale]
+
+async function confirmPrompt(page, v, capture, name) {
+  const dialog = page.getByRole("dialog").filter({ has: page.getByRole("button", { name: t(v).confirm, exact: true }) })
+  await dialog.waitFor()
+  if (capture) await shot(page, v, name)
+  await dialog.getByRole("button", { name: t(v).confirm, exact: true }).click()
+}
+
+async function rejectPrompt(page, v) {
+  const dialog = page.getByRole("dialog").filter({ has: page.getByRole("button", { name: t(v).confirm, exact: true }) })
+  await dialog.waitFor()
+  await dialog.getByRole("button", { name: t(v).reject, exact: true }).click()
+}
+
+async function setFailNext(page, v) {
+  await page.getByRole("button", { name: t(v).controls }).click()
+  await page.getByRole("switch", { name: t(v).failNext }).click()
+  await page.keyboard.press("Escape")
+  await page.waitForTimeout(200)
+}
 
 async function connect(page, v, capture) {
   await page.goto(`${BASE}/${v.locale}/app`, { waitUntil: "networkidle" })
-  const btn = page.getByRole("main").getByRole("button", { name: v.locale === "fr" ? "Connecter le portefeuille de démo" : "Connect demo wallet" })
+  const btn = page.getByRole("main").getByRole("button", { name: t(v).connect })
   await btn.waitFor()
-  if (capture) await shot(page, v, "app-01-gate", true)
-  await btn.click()
-  const dialog = page.getByRole("dialog")
-  await dialog.waitFor()
-  if (capture) await shot(page, v, "flow1-connect-prompt")
-  await dialog.getByRole("button", { name: v.locale === "fr" ? "Confirmer" : "Confirm" }).click()
-  await page.getByRole("heading", { level: 1, name: v.locale === "fr" ? "Vos partages" : "Your splits", exact: true }).waitFor({ timeout: 10000 })
+  if (capture) {
+    await shot(page, v, "app-01-board-guest", true)
+    await btn.click()
+    await rejectPrompt(page, v)
+    await page.getByRole("main").getByRole("alert").first().waitFor()
+    await shot(page, v, "flow1-connect-rejected")
+  }
+  await page.getByRole("main").getByRole("button", { name: t(v).connect }).click()
+  await confirmPrompt(page, v, capture, "flow1-connect-prompt")
+  await page.waitForFunction(() => {
+    try {
+      return JSON.parse(localStorage.getItem("taskflow-demo-v1") ?? "{}").wallet?.status === "connected"
+    } catch {
+      return false
+    }
+  }, null, { timeout: 10000 })
+  await page.waitForTimeout(500)
 }
 
 async function marketing(page, v) {
@@ -63,157 +167,148 @@ async function marketing(page, v) {
     ["404", "/this-page-does-not-exist"],
   ]) {
     await page.goto(`${BASE}/${v.locale}${path}`, { waitUntil: "networkidle" })
-    await page.waitForTimeout(400)
+    await page.waitForTimeout(600)
     await shot(page, v, `page-${name}`, true)
   }
   if (isMobile(v)) {
     await page.goto(`${BASE}/${v.locale}`, { waitUntil: "networkidle" })
-    await page.getByRole("button", { name: "Open menu" }).click()
+    await page.getByRole("button", { name: t(v).menu }).click()
     await page.getByRole("dialog").waitFor()
     await shot(page, v, "page-mobile-menu")
   }
 }
 
-async function appFlows(page, v) {
-  // Flow 1: connect (gate + prompt captured inside connect())
-  await connect(page, v, true)
-  await shot(page, v, "app-02-dashboard", true)
-
-  // Rejected connection (failure state of flow 1)
-  await page.evaluate(() => {
-    const s = JSON.parse(localStorage.getItem("splitflow-demo-v1"))
-    s.wallet.status = "disconnected"
-    localStorage.setItem("splitflow-demo-v1", JSON.stringify(s))
-  })
-  await page.reload({ waitUntil: "networkidle" })
-  await page.getByRole("main").getByRole("button", { name: "Connect demo wallet" }).click()
-  await page.getByRole("dialog").getByRole("button", { name: "Reject" }).click()
-  await page.getByText("You declined the sign-in request").waitFor()
-  await shot(page, v, "flow1-connect-rejected")
-  await page.getByRole("main").getByRole("button", { name: "Connect demo wallet" }).click()
-  await page.getByRole("dialog").getByRole("button", { name: "Confirm" }).click()
-  await page.getByRole("heading", { level: 1, name: "Your splits", exact: true }).waitFor({ timeout: 10000 })
-
-  // Flow 2: create a split
+async function flowPost(page, v) {
   await page.goto(`${BASE}/${v.locale}/app/new`, { waitUntil: "networkidle" })
-  await page.getByRole("heading", { level: 1 }).waitFor()
+  await page.getByLabel(t(v).title, { exact: true }).waitFor()
   await shot(page, v, "flow2-composer-blank", true)
-  await page.getByRole("button", { name: "Deploy split" }).click()
-  await page.waitForTimeout(200)
+  await page.getByRole("button", { name: t(v).publish }).click()
   await shot(page, v, "flow2-composer-errors", true)
-  await page.getByRole("button", { name: "Hackathon prize" }).click()
-  await page.getByLabel("Name", { exact: true }).fill("Spring hackathon prize")
+  await page.getByLabel(t(v).title, { exact: true }).fill("Add keyboard shortcuts to the Kanban board")
+  await page.getByLabel(t(v).description, { exact: true }).fill(
+    "Power users move dozens of cards a day. Add shortcuts to move the focused card between columns and open it, with a help overlay listing them."
+  )
+  await page.getByLabel(t(v).criteriaField, { exact: true }).fill("Arrow keys move the focused card\nEnter opens it, Escape closes it\nA help overlay lists every shortcut")
+  await page.getByLabel(t(v).amount, { exact: true }).fill("400")
   await shot(page, v, "flow2-composer-filled", true)
-  // Fail once to show the failed deploy state
-  await page.getByRole("button", { name: "Demo controls" }).click()
-  await page.getByLabel("Fail the next transaction").click()
-  await page.keyboard.press("Escape")
-  await page.getByRole("button", { name: "Deploy split" }).click()
-  await page.getByRole("dialog").waitFor()
-  await shot(page, v, "flow2-deploy-prompt")
-  await page.getByRole("dialog").getByRole("button", { name: "Confirm" }).click()
-  await page.getByText("Waiting for the network…").first().waitFor()
-  await shot(page, v, "flow2-deploy-pending")
-  await page.getByText("The transaction failed on the network").waitFor({ timeout: 10000 })
-  await page.getByText("The transaction failed on the network").scrollIntoViewIfNeeded()
-  await shot(page, v, "flow2-deploy-failed")
-  await page.getByRole("button", { name: "Try again" }).click()
-  await page.getByRole("dialog").getByRole("button", { name: "Confirm" }).click()
-  await page.waitForURL(/\/app\/split\//, { timeout: 15000 })
-  await page.getByRole("heading", { level: 1, name: "Spring hackathon prize" }).waitFor()
-  await shot(page, v, "flow2-deployed", true)
-
-  // Flow 3: simulate a payment, then distribute (co-op split, manual distribution)
-  await page.goto(`${BASE}/${v.locale}/app/split/market-street-coop`, { waitUntil: "networkidle" })
-  await page.getByRole("heading", { level: 1 }).waitFor()
-  await shot(page, v, "flow3-split-waiting", true)
-  await page.getByRole("button", { name: "Simulate a payment" }).click()
-  await page.getByRole("dialog").waitFor()
-  await shot(page, v, "flow3-simulate-dialog")
-  await page.getByRole("dialog").getByRole("button", { name: "Send test payment" }).click()
-  await page.getByRole("dialog", { name: /Send/ }).getByRole("button", { name: "Confirm" }).click()
-  await page.getByText(/Payment received/).first().waitFor({ timeout: 10000 })
-  await page.getByRole("button", { name: "Distribute now" }).click()
-  await page.getByRole("dialog").getByRole("button", { name: "Confirm" }).click()
-  await page.getByText("Distributing…").first().waitFor()
-  await page.getByRole("heading", { name: "Waiting to be distributed" }).scrollIntoViewIfNeeded()
-  await shot(page, v, "flow3-distributing")
-  await page.getByText(/Paid .* to \d recipients/).first().waitFor({ timeout: 10000 })
-  await page.waitForTimeout(900)
-  await page.getByRole("heading", { name: "Waiting to be distributed" }).scrollIntoViewIfNeeded()
-  await shot(page, v, "flow3-paid")
-
-  // Flow 5: audit log with a receipt open
-  await page.getByRole("tab", { name: "Activity" }).click()
-  await page.getByRole("button", { name: "Show receipt" }).first().click()
-  await page.getByRole("tab", { name: "Activity" }).scrollIntoViewIfNeeded()
-  await shot(page, v, "flow5-activity")
-
-  // Flow 4: approvals, then freeze (club split: 2,500 waiting, threshold 2,000)
-  await page.goto(`${BASE}/${v.locale}/app/split/campus-sponsorships`, { waitUntil: "networkidle" })
-  await page.getByRole("heading", { level: 1 }).waitFor()
-  await page.getByRole("button", { name: "Propose payout" }).click()
-  await page.getByRole("dialog").getByRole("button", { name: "Confirm" }).click()
-  await page.getByRole("heading", { name: "Payout waiting for approvals" }).waitFor({ timeout: 10000 })
-  await page.getByRole("heading", { name: "Payout waiting for approvals" }).scrollIntoViewIfNeeded()
-  await shot(page, v, "flow4-approvals")
-  await page.getByRole("button", { name: /Approve as Inès/ }).click()
-  await page.getByText(/Paid .* to \d recipients/).first().waitFor({ timeout: 10000 })
-  await page.waitForTimeout(900)
-  await page.getByRole("heading", { name: "Waiting to be distributed" }).scrollIntoViewIfNeeded()
-  await shot(page, v, "flow4-approved-paid")
-  await page.getByRole("button", { name: "Freeze split" }).click()
-  await page.getByRole("dialog").getByRole("button", { name: "Confirm" }).click()
-  await page.getByText("This split is frozen.").waitFor({ timeout: 10000 })
-  await page.evaluate(() => window.scrollTo(0, 0))
-  await shot(page, v, "flow4-frozen", true)
-
-  // Demo controls
-  await page.getByRole("button", { name: "Demo controls" }).click()
-  await page.getByRole("dialog").waitFor()
-  await shot(page, v, "app-03-demo-controls")
-  await page.keyboard.press("Escape")
+  // Failure first: the transaction reverts and the form stays filled.
+  await setFailNext(page, v)
+  await page.getByRole("button", { name: t(v).publish }).click()
+  await confirmPrompt(page, v, true, "flow2-lock-prompt")
+  await page.getByRole("alert").filter({ hasText: /./ }).last().waitFor({ timeout: 10000 })
+  await page.waitForTimeout(300)
+  await shot(page, v, "flow2-lock-failed", true)
+  await page.getByRole("button", { name: t(v).publish }).click()
+  await confirmPrompt(page, v, false)
+  await page.waitForTimeout(500)
+  await shot(page, v, "flow2-lock-pending")
+  await page.waitForURL(/\/app\/bounty\//, { timeout: 15000 })
+  await page.waitForTimeout(1200)
+  await shot(page, v, "flow2-posted")
 }
 
-async function frenchFlow(page, v) {
-  await page.goto(`${BASE}/fr`, { waitUntil: "networkidle" })
+async function flowSubmit(page, v) {
+  await page.goto(`${BASE}/${v.locale}/app/bounty/ambassador-walkthrough`, { waitUntil: "networkidle" })
   await page.waitForTimeout(400)
-  await shot(page, v, "page-home", true)
-  await connect(page, v, true)
-  await shot(page, v, "app-02-dashboard", true)
-  await page.goto(`${BASE}/fr/app/split/market-street-coop`, { waitUntil: "networkidle" })
-  await page.getByRole("heading", { level: 1 }).waitFor()
-  await page.getByRole("button", { name: "Verser maintenant" }).click()
-  await page.getByRole("dialog").waitFor()
-  await shot(page, v, "flow3-prompt")
-  await page.getByRole("dialog").getByRole("button", { name: "Confirmer" }).click()
-  await page.getByText(/versés à \d destinataires/).first().waitFor({ timeout: 10000 })
-  await page.waitForTimeout(900)
-  await page.evaluate(() => window.scrollTo(0, 0))
-  await shot(page, v, "flow3-paid", true)
-  await page.goto(`${BASE}/fr/app/new`, { waitUntil: "networkidle" })
-  await page.getByRole("button", { name: "Surplus de coop" }).click()
-  await shot(page, v, "flow2-composer-filled", true)
+  await shot(page, v, "flow3-visibility-locked", true)
+  await page.goto(`${BASE}/${v.locale}/app/bounty/timesheet-timezone`, { waitUntil: "networkidle" })
+  await page.getByRole("button", { name: t(v).submitWork }).click()
+  const dialog = page.getByRole("dialog")
+  await dialog.getByRole("button", { name: t(v).sendWork }).click()
+  await shot(page, v, "flow3-submit-errors")
+  await dialog.getByLabel(t(v).link).fill("https://github.com/monark-community/timesheet/pull/57")
+  await dialog.getByLabel(t(v).note).fill("Exports now group by the member's own timezone. Added tests for 23:59, 00:01 and both DST switches.")
+  await dialog.getByLabel(t(v).criteria).check()
+  await dialog.getByRole("button", { name: t(v).sendWork }).click()
+  await confirmPrompt(page, v, true, "flow3-submit-prompt")
+  await page.waitForTimeout(400)
+  await shot(page, v, "flow3-submit-pending")
+  await page.getByRole("button", { name: t(v).posterRejects }).waitFor({ timeout: 15000 })
+  await page.waitForTimeout(600)
+  await shot(page, v, "flow3-submitted", true)
+  await page.getByRole("button", { name: t(v).posterRejects }).click()
+  await page.waitForTimeout(3500)
+  await shot(page, v, "flow3-rejected-with-note", true)
 }
 
-const browser = await chromium.launch()
-await mkdir(OUT, { recursive: true })
-for (const v of variants) {
-  const tag = `${v.locale}-${v.w}-${v.theme}`
-  if (ONLY && !tag.includes(ONLY)) continue
-  console.log(tag)
-  const { context, page } = await newPage(browser, v)
-  try {
-    if (v.locale === "fr") await frenchFlow(page, v)
-    else {
-      await marketing(page, v)
-      await appFlows(page, v)
-    }
-  } catch (e) {
-    console.error("  ✗", tag, e.message)
-    await page.screenshot({ path: `${OUT}_error-${tag}.png` }).catch(() => {})
-    process.exitCode = 1
-  }
-  await context.close()
+async function flowReview(page, v) {
+  await page.goto(`${BASE}/${v.locale}/app/bounty/trust-contacts-tests`, { waitUntil: "networkidle" })
+  await page.getByRole("button", { name: t(v).approvePay }).first().waitFor()
+  await shot(page, v, "flow4-review", true)
+  // Reject Mei's submission with a reason.
+  await page.getByRole("button", { name: t(v).rejectBtn, exact: true }).last().click()
+  const dialog = page.getByRole("dialog")
+  await dialog.getByLabel(t(v).reason).fill("The revoke tests are skipped, so revoking isn't covered yet. Please fix the fixture and enable them.")
+  await dialog.getByRole("button", { name: t(v).rejectSend }).click()
+  await confirmPrompt(page, v, false)
+  await page.getByRole("button", { name: t(v).rejectSend }).waitFor({ state: "detached", timeout: 15000 })
+  await page.waitForTimeout(800)
+  await shot(page, v, "flow4-rejected", true)
+  // Approve Priya: the release line draws from the escrow to her.
+  await page.getByRole("button", { name: t(v).approvePay }).first().click()
+  await confirmPrompt(page, v, true, "flow4-release-prompt")
+  await page.waitForTimeout(400)
+  await shot(page, v, "flow4-release-pending")
+  await page.getByText(t(v).releasedTo).first().waitFor({ timeout: 15000 })
+  await page.evaluate(() => window.scrollTo(0, 0))
+  await page.waitForTimeout(500)
+  await shot(page, v, "flow4-released")
+  await page.waitForTimeout(1200)
+  await shot(page, v, "flow4-paid", true)
 }
-await browser.close()
+
+async function flowVote(page, v) {
+  await page.goto(`${BASE}/${v.locale}/app/bounty/audit-escrow-release`, { waitUntil: "networkidle" })
+  await page.getByRole("button", { name: t(v).voteApprove }).waitFor()
+  await shot(page, v, "flow5-vote", true)
+  await setFailNext(page, v)
+  await page.getByRole("button", { name: t(v).voteApprove }).click()
+  await confirmPrompt(page, v, false)
+  await page.waitForTimeout(3500)
+  await shot(page, v, "flow5-vote-failed", true)
+  await page.getByRole("button", { name: t(v).voteApprove }).click()
+  await confirmPrompt(page, v, true, "flow5-vote-prompt")
+  await page.getByText(t(v).quorumReached).first().waitFor({ timeout: 15000 })
+  await page.waitForTimeout(1200)
+  await shot(page, v, "flow5-quorum-paid", true)
+}
+
+async function run() {
+  await mkdir(OUT, { recursive: true })
+  const browser = await chromium.launch()
+  for (const v of variants) {
+    const key = `${v.locale}-${v.w}-${v.theme}`
+    if (ONLY && !key.includes(ONLY)) continue
+    console.log(key)
+    const { context, page } = await newPage(browser, v)
+    if (v.full) {
+      await marketing(page, v)
+      await connect(page, v, true)
+      await shot(page, v, "app-02-board", true)
+      await flowPost(page, v)
+      await flowSubmit(page, v)
+      await flowReview(page, v)
+      await flowVote(page, v)
+      await page.goto(`${BASE}/${v.locale}/app/you`, { waitUntil: "networkidle" })
+      await page.waitForTimeout(500)
+      await shot(page, v, "app-03-your-work", true)
+      await page.goto(`${BASE}/${v.locale}/app/leaderboard`, { waitUntil: "networkidle" })
+      await page.waitForTimeout(500)
+      await shot(page, v, "app-04-leaderboard", true)
+    } else {
+      await page.goto(`${BASE}/${v.locale}`, { waitUntil: "networkidle" })
+      await page.waitForTimeout(600)
+      await shot(page, v, "page-home", true)
+      await connect(page, v, false)
+      await shot(page, v, "app-02-board", true)
+      await flowReview(page, v)
+    }
+    await context.close()
+  }
+  await browser.close()
+}
+
+run().catch((e) => {
+  console.error(e)
+  process.exit(1)
+})

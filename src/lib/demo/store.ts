@@ -2,7 +2,7 @@
 
 import { useSyncExternalStore } from "react"
 
-import { createSeed, type SeedCopy } from "./seed"
+import { createSeed, localizeSeed, type SeedCopy } from "./seed"
 import type { Bounty, DemoSettings, DemoState, TxSummary, WalletState } from "./types"
 
 /**
@@ -48,8 +48,15 @@ function load(): DemoState | null {
 
 /** Load saved state, or seed the examples in the visitor's language. Idempotent. */
 export function initDemo(copy: SeedCopy, locale: "en" | "fr") {
-  if (state) return
-  state = load() ?? createSeed(copy, locale)
+  if (state) {
+    if (state.seededLocale === locale) return
+    state = localizeSeed(state, copy, locale)
+    persist()
+    emit()
+    return
+  }
+  const saved = load()
+  state = saved ? localizeSeed(saved, copy, locale) : createSeed(copy, locale)
   persist()
   emit()
 }

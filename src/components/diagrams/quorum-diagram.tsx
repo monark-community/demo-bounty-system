@@ -15,7 +15,7 @@ export function QuorumDiagram({
         {ys.map((y, i) => (
           <g key={y}>
             <path
-              d={`M 74 ${y} C 180 ${y}, 170 130, 250 130`}
+              d={`M 74 ${y} C 170 ${y}, 160 130, 240 130`}
               fill="none"
               stroke={votes[i] ? "var(--primary)" : "var(--input)"}
               strokeWidth={votes[i] ? 2.5 : 2}
@@ -31,13 +31,13 @@ export function QuorumDiagram({
             </text>
           </g>
         ))}
-        <rect x="250" y="95" width="120" height="70" rx="35" fill="var(--card)" stroke="var(--primary)" strokeWidth="2.5" />
-        <text x="310" y="136" textAnchor="middle" fontSize="17" fontWeight="800" fill="var(--foreground)" fontFamily="inherit">
+        <rect x="240" y="95" width="160" height="70" rx="35" fill="var(--card)" stroke="var(--primary)" strokeWidth="2.5" />
+        <text x="320" y="136" textAnchor="middle" fontSize="17" fontWeight="800" fill="var(--foreground)" fontFamily="inherit">
           {labels.quorum}
         </text>
-        <path d="M 374 130 H 500" fill="none" stroke="var(--primary)" strokeWidth="3.5" strokeLinecap="round" />
+        <path d="M 404 130 H 500" fill="none" stroke="var(--primary)" strokeWidth="3.5" strokeLinecap="round" />
         <path d="M 490 120 L 502 130 L 490 140" fill="none" stroke="var(--primary)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-        <text x="440" y="116" textAnchor="middle" fontSize="16" fontWeight="700" fill="var(--foreground)" fontFamily="inherit">
+        <text x="470" y="112" textAnchor="middle" fontSize="16" fontWeight="700" fill="var(--foreground)" fontFamily="inherit">
           {labels.payout}
         </text>
       </svg>

@@ -27,6 +27,8 @@ export interface TicketProps {
   className?: string
   /** Heading level for the title inside lists. */
   as?: "h2" | "h3"
+  /** Narrow stub, for side columns. */
+  compact?: boolean
 }
 
 const STATUS_STYLE: Record<TicketStatus, string> = {
@@ -92,6 +94,7 @@ export function Ticket(props: TicketProps) {
     flag,
     className,
     as: Heading = "h3",
+    compact = false,
   } = props
   const settled = status === "paid" || status === "cancelled"
 
@@ -103,7 +106,7 @@ export function Ticket(props: TicketProps) {
         className
       )}
     >
-      <div className="flex min-w-0 flex-1 flex-col gap-2 p-4 sm:p-5">
+      <div className={cn("flex min-w-0 flex-1 flex-col gap-2 p-4", !compact && "sm:p-5")}>
         <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-semibold text-muted-foreground">
           <span className="text-foreground">{org}</span>
           <span aria-hidden="true">·</span>
@@ -149,7 +152,12 @@ export function Ticket(props: TicketProps) {
           ) : null}
         </p>
       </div>
-      <div className="flex w-[7.25rem] shrink-0 flex-col items-end justify-center gap-0.5 border-l-2 border-dashed p-4 text-right sm:w-40 sm:p-5">
+      <div
+        className={cn(
+          "flex w-[7.25rem] shrink-0 flex-col items-end justify-center gap-0.5 border-l-2 border-dashed p-4 text-right",
+          !compact && "sm:w-40 sm:p-5"
+        )}
+      >
         <span
           className={cn(
             "inline-flex items-center gap-1 text-[0.6875rem] font-bold tracking-wide uppercase",

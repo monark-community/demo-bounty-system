@@ -2,7 +2,7 @@
 
 import { ArrowLeftIcon, ExternalLinkIcon, InfoIcon, SendIcon, ShieldCheckIcon, XIcon } from "lucide-react"
 import Link from "next/link"
-import { useState } from "react"
+import { useId, useState } from "react"
 import { toast } from "sonner"
 
 import { useAppCopy } from "@/components/demo/app-provider"
@@ -101,7 +101,7 @@ export function BountyView({ id }: { id: string }) {
         </Link>
         <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
           <StatusPill status={st} label={labels.bountyStatus[st]} />
-          <span>{t(c.postedBy, { name: posterName, org: bounty.org })}</span>
+          <span>{t(c.postedBy, { name: nameOf(demo, bounty.posterId, labels.youInline), org: bounty.org })}</span>
           <span aria-hidden="true">·</span>
           <span>{t(c.postedOn, { date: formatDate(bounty.createdAt, locale) })}</span>
         </p>
@@ -115,9 +115,9 @@ export function BountyView({ id }: { id: string }) {
           </h2>
           <p className="text-sm font-semibold" aria-live="polite">
             {bounty.status === "paid" && winner
-              ? t(c.escrow.released, { name: nameOf(demo, winner.id, labels.you) })
+              ? t(c.escrow.released, { name: nameOf(demo, winner.id, labels.youInline) })
               : bounty.status === "cancelled"
-                ? t(c.escrow.refunded, { name: posterName })
+                ? t(c.escrow.refunded, { name: nameOf(demo, bounty.posterId, labels.youInline) })
                 : t(c.escrow.locked, { amount: formatToken(bounty.reward, bounty.token, locale) })}
           </p>
         </div>
@@ -153,6 +153,15 @@ export function BountyView({ id }: { id: string }) {
 
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start">
         <div className="flex min-w-0 flex-col gap-8">
+          <YourMove
+            demo={demo}
+            bounty={bounty}
+            connected={connected}
+            isValidator={isValidator}
+            onSubmit={() => setSubmitOpen(true)}
+            onCancel={() => setCancelOpen(true)}
+            className="lg:hidden"
+          />
           <section aria-labelledby="brief-title" className="flex flex-col gap-4">
             <h2 id="brief-title" className="text-xl font-bold">
               {c.brief}
@@ -197,6 +206,7 @@ export function BountyView({ id }: { id: string }) {
             isValidator={isValidator}
             onSubmit={() => setSubmitOpen(true)}
             onCancel={() => setCancelOpen(true)}
+            className="hidden lg:flex"
           />
 
           <section aria-labelledby="details-title" className="rounded-2xl border bg-card p-4">
@@ -244,7 +254,9 @@ function YourMove({
   isValidator,
   onSubmit,
   onCancel,
+  className,
 }: {
+  className?: string
   demo: DemoState
   bounty: Bounty
   connected: boolean
@@ -259,7 +271,8 @@ function YourMove({
   const canCancel = bounty.posterId === demo.youId && bounty.status === "open" && activeSubmissions(bounty).length === 0
   const cancelBlocked = bounty.posterId === demo.youId && bounty.status === "open" && !canCancel
 
-  if (!connected) return <ConnectCard />
+  const titleId = useId()
+  if (!connected) return <ConnectCard className={className} />
 
   const reason =
     block === "visibility"
@@ -271,8 +284,8 @@ function YourMove({
           : null
 
   return (
-    <section aria-labelledby="move-title" className="flex flex-col gap-3 rounded-2xl border-2 border-primary/60 bg-card p-4">
-      <h2 id="move-title" className="eyebrow text-muted-foreground">
+    <section aria-labelledby={titleId} className={cn("flex flex-col gap-3 rounded-2xl border-2 border-primary/60 bg-card p-4", className)}>
+      <h2 id={titleId} className="eyebrow text-muted-foreground">
         {a.title}
       </h2>
       {isValidator ? (
@@ -598,15 +611,17 @@ function SubmissionCard({ demo, bounty, submission }: { demo: DemoState; bounty:
 function History({ demo, bounty }: { demo: DemoState; bounty: Bounty }) {
   const { app, labels, locale } = useAppCopy()
   const h = app.bounty.activity
-  const subOwner = (e: BountyEvent) => {
+  const subLabel = (e: BountyEvent) => {
     const s = e.submissionId ? bounty.submissions.find((x) => x.id === e.submissionId) : undefined
-    return s ? nameOf(demo, s.personId, labels.you) : ""
+    if (!s) return ""
+    return s.personId === demo.youId ? h.subYours : t(h.subOf, { who: nameOf(demo, s.personId, labels.you) })
   }
   const line = (e: BountyEvent) => {
     const name = nameOf(demo, e.personId, labels.you)
     const amount = e.amount ? formatToken(e.amount, bounty.token, locale) : ""
     const key = e.kind === "vote" ? (e.approve ? "vote_approve" : "vote_reject") : e.kind
-    return t(h.kinds[key], { name, amount, who: subOwner(e) })
+    const templates = e.personId === demo.youId ? h.kindsYou : h.kinds
+    return t(templates[key], { name, amount, sub: subLabel(e) })
   }
   const events = [...bounty.events].reverse()
 
