@@ -1,6 +1,6 @@
 # TaskFlow by Monark: site plan
 
-Status: plan for the rebuild on `develop`. It is kept in sync with what ships.
+Status: shipped on `develop`. This plan describes what the site does; it is kept in sync with the code (see §12 for decisions taken while building).
 
 - Product: **TaskFlow**, Monark's bounty module.
 - Authoritative description: https://www.monark.io/en/project/bounty-system
@@ -217,3 +217,20 @@ A designed `/{locale}/pricing` page exists **for internal review only**: not lin
 - Disputes and appeals beyond the rejection note and resubmission; validator rotation (explained on `/how-it-works`, not simulated).
 - Editing a bounty after it is published (only cancel and refund), comments or chat, notifications, file uploads (submissions are links), profiles for other people.
 - A `/brand` page, a blog, or any backend.
+
+## 12. Implementation notes (as shipped)
+
+Decisions taken unattended while building, recorded here instead of asked:
+
+- **Source for the documentation page.** monark.io renders the project page client-side, so it was read from its source (`monark-community/website/content/en/project/bounty-system/page.mdx`). Its feature list (categories, deadlines, approval flows, rejection notes, leaderboard, reputation, role-based visibility, multi-sig/validator approvals) drives §5 and §6.
+- **Theme.** `theme-2026.json` isn't published, so `theme.json` was installed and the guidelines' §3 token block pasted over it in `src/app/globals.css`, plus muted `--success` / `--warning` status colours (always paired with a text label). `--surface-tint: 1`.
+- **Registry.** `wallet`, `token-amount`, `network-badge` and `tx-status` came from the `@monark` registry; `connect-wallet`'s bare `wallet` dependency doesn't resolve through the shadcn CLI, so its source was copied from the registry JSON. Registry components are restyled to pills, as in the other Monark demo sites.
+- **Board without a gate.** Unlike a dashboard, a bounty board is public: every page of `/app` is readable without a wallet, and actions show an inline "Connect a demo wallet" card instead of a full-page gate.
+- **Your roles in the demo.** You are a Monark member, a validator on the security council (for the audit bounty) and the poster of one bounty; you are not an ambassador, so the ambassador-only bounty demonstrates the visibility lock. A demo control grants the ambassador role.
+- **Playing the other side.** The poster's and other validators' decisions are simulated by clearly labelled "Demo: play the other side" buttons on your own submission (and "Simulate Marc-Antoine's vote" after you vote), so flows 3 and 5 can be completed alone. These skip the wallet prompt (it isn't your wallet) but still go through pending and confirmation.
+- **Ticket stub label.** The stub says "Locked" / « Bloqué » (not "Locked in escrow") so it fits on one line at 360 px; the escrow panel on the bounty page spells it out.
+- **Home "Open right now".** The three cards are rendered at build time from the same seed as the demo, without deadlines (a relative deadline would be stale in a static page).
+- **Language switch.** Seeded content is re-translated when the visitor switches language, keeping every change they made; text they typed stays as typed.
+- **Toasts.** Top-right under the header on desktop and full width under the header on phones. They sit over the app strip, never over the escrow panel, the tally or the submissions they report on (checked in the screenshots).
+- **Dependencies beyond the stack.** `next-themes` (theme toggle without a flash), `sonner` (toasts), `react-jazzicon` (required by the registry `wallet`), `cn` (the registry's class merger); `playwright` as a dev dependency for `pnpm screenshots`. No recharts: the only chart-like elements are the tally and leaderboard bars, drawn in code.
+- **Screenshots.** `docs/screenshots/`: every page and flow at 390 and 1440 px, light and dark, in English; the home page, the board and the review-and-payout flow (flow 4) in French, at both widths.
