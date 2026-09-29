@@ -1,15 +1,15 @@
 "use client"
 
-import { ArrowLeftIcon, ExternalLinkIcon, InfoIcon, SendIcon, ShieldCheckIcon, XIcon } from "lucide-react"
+import { ArrowLeftIcon, ExternalLinkIcon, SendIcon, ShieldCheckIcon, XIcon } from "lucide-react"
 import Link from "next/link"
 import { useId, useState } from "react"
 import { toast } from "sonner"
 
 import { useAppCopy } from "@/components/demo/app-provider"
 import { ConnectCard } from "@/components/demo/app-frame"
-import { Disclaimer } from "@/components/demo/disclaimer"
 import { TxFeedback } from "@/components/demo/tx-feedback"
 import { Button } from "@/components/ui/button"
+import { InfoTip } from "@/components/ui/info-tip"
 import { WalletAddress, WalletAvatar } from "@/components/ui/wallet"
 import { href } from "@/i18n/config"
 import { t } from "@/i18n/t"
@@ -92,33 +92,29 @@ export function BountyView({ id }: { id: string }) {
   return (
     <div className="flex flex-col gap-8">
       <div className="flex flex-col gap-4">
-        <Link
-          href={href(locale, "/app")}
-          className="inline-flex min-h-11 w-fit items-center gap-1.5 text-sm font-semibold text-muted-foreground hover:text-foreground sm:min-h-0"
-        >
-          <ArrowLeftIcon className="size-4" aria-hidden="true" />
-          {c.back}
-        </Link>
         <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
           <StatusPill status={st} label={labels.bountyStatus[st]} />
           <span>{t(c.postedBy, { name: nameOf(demo, bounty.posterId, labels.youInline), org: bounty.org })}</span>
-          <span aria-hidden="true">·</span>
-          <span>{t(c.postedOn, { date: formatDate(bounty.createdAt, locale) })}</span>
         </p>
         <h1 className="max-w-4xl text-3xl font-extrabold tracking-display text-balance sm:text-4xl">{bounty.title}</h1>
       </div>
 
       <section aria-labelledby="escrow-title" className="rounded-3xl border bg-card p-4 sm:p-6">
         <div className="mb-5 flex flex-wrap items-baseline justify-between gap-2">
-          <h2 id="escrow-title" className="eyebrow text-muted-foreground">
-            {c.escrow.title}
-          </h2>
+          <div className="flex items-center gap-1">
+            <h2 id="escrow-title" className="eyebrow text-muted-foreground">
+              {c.escrow.title}
+            </h2>
+            <InfoTip label={c.escrow.info} className="-my-2">
+              {c.escrow.explain}
+            </InfoTip>
+          </div>
           <p className="text-sm font-semibold" aria-live="polite">
             {bounty.status === "paid" && winner
               ? t(c.escrow.released, { name: nameOf(demo, winner.id, labels.youInline) })
               : bounty.status === "cancelled"
                 ? t(c.escrow.refunded, { name: nameOf(demo, bounty.posterId, labels.youInline) })
-                : t(c.escrow.locked, { amount: formatToken(bounty.reward, bounty.token, locale) })}
+                : null}
           </p>
         </div>
         <EscrowRail
@@ -145,10 +141,6 @@ export function BountyView({ id }: { id: string }) {
             <dd className="font-mono text-sm">{shortHash(bounty.lockHash)}</dd>
           </div>
         </dl>
-        <p className="mt-3 flex items-start gap-1.5 text-xs text-muted-foreground">
-          <InfoIcon className="mt-px size-3.5 shrink-0" aria-hidden="true" />
-          {c.escrow.explain}
-        </p>
       </section>
 
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start">
@@ -193,7 +185,7 @@ export function BountyView({ id }: { id: string }) {
                   ))}
               </ul>
             ) : (
-              <p className="rounded-2xl border border-dashed p-5 text-muted-foreground">{isPoster ? c.submissions.emptyOwn : c.submissions.empty}</p>
+              <p className="rounded-2xl border border-dashed p-5 text-muted-foreground">{c.submissions.empty}</p>
             )}
           </section>
         </div>
@@ -275,7 +267,9 @@ function YourMove({
   if (!connected) return <ConnectCard className={className} />
 
   const reason =
-    block === "visibility"
+    block === "own" || isValidator
+      ? null
+      : block === "visibility"
       ? t(a.reasons.visibility, { role: bounty.visibility === "ambassadors" ? a.roleNames.ambassadors : a.roleNames.members })
       : block === "closed"
         ? t(a.reasons.closed, { date: formatDate(bounty.deadline, locale) })
@@ -315,7 +309,7 @@ function YourMove({
 }
 
 function SubmissionCard({ demo, bounty, submission }: { demo: DemoState; bounty: Bounty; submission: Submission }) {
-  const { app, labels, locale, disclaimer } = useAppCopy()
+  const { app, labels, locale } = useAppCopy()
   const c = app.bounty.submissions
   const v = app.bounty.vote
   const person = personById(demo, submission.personId)
@@ -337,14 +331,14 @@ function SubmissionCard({ demo, bounty, submission }: { demo: DemoState; bounty:
   const statusLabel =
     submission.status === "review" && !posterMode ? labels.submissionStatus.voting : labels.submissionStatus[submission.status]
 
+  // One message, once: the card, the tally and the escrow panel report every
+  // result. The only toast is your own payout, which adds the reputation earned.
   function toastPaid() {
-    const points = REPUTATION[bounty.difficulty]
-    if (isYours) toast.success(t(app.toasts.paidYou, { amount, points }))
-    else toast.success(t(app.toasts.paid, { name, amount }))
+    if (isYours) toast.success(t(app.toasts.paidYou, { amount, points: REPUTATION[bounty.difficulty] }))
   }
 
   async function approve() {
-    const ok = await tx.run(
+    await tx.run(
       {
         title: t(app.summaries.release, { amount, name }),
         rows: [
@@ -355,7 +349,6 @@ function SubmissionCard({ demo, bounty, submission }: { demo: DemoState; bounty:
       },
       (hash) => approveSubmission(bounty.id, submission.id, hash)
     )
-    if (ok) toastPaid()
   }
 
   async function voteApprove() {
@@ -374,10 +367,7 @@ function SubmissionCard({ demo, bounty, submission }: { demo: DemoState; bounty:
         setFreshVoter(demo.youId)
       }
     )
-    if (ok) {
-      if (result.outcome === "approved") toast.success(t(app.toasts.quorum, { name, amount }))
-      else toast.success(app.toasts.voted)
-    }
+    if (ok && result.outcome === "approved") toastPaid()
   }
 
   async function simulateOtherVote(personId: string) {
@@ -390,10 +380,7 @@ function SubmissionCard({ demo, bounty, submission }: { demo: DemoState; bounty:
       },
       { skipPrompt: true }
     )
-    if (ok && result.outcome === "approved") {
-      if (isYours) toastPaid()
-      else toast.success(t(app.toasts.quorum, { name, amount }))
-    }
+    if (ok && result.outcome === "approved") toastPaid()
   }
 
   async function simulatePoster(approveIt: boolean) {
@@ -405,9 +392,7 @@ function SubmissionCard({ demo, bounty, submission }: { demo: DemoState; bounty:
       },
       { skipPrompt: true }
     )
-    if (!ok) return
-    if (approveIt) toastPaid()
-    else toast(app.toasts.rejectedYou)
+    if (ok && approveIt) toastPaid()
   }
 
   async function simulateValidators() {
@@ -459,9 +444,9 @@ function SubmissionCard({ demo, bounty, submission }: { demo: DemoState; bounty:
               {!isYours && person ? <span className="ml-1.5 text-xs font-semibold text-muted-foreground">{person.handle}</span> : null}
             </p>
             <p className="text-xs text-muted-foreground">
-              <time dateTime={submission.at}>{t(c.submittedAt, { date: formatRelative(submission.at, locale) })}</time>
-              <span aria-hidden="true"> · </span>
-              <span className="font-mono">{shortHash(submission.hash, 6, 4)}</span>
+              <time dateTime={submission.at} title={submission.hash}>
+                {t(c.submittedAt, { date: formatRelative(submission.at, locale) })}
+              </time>
             </p>
           </div>
         </div>
@@ -541,7 +526,6 @@ function SubmissionCard({ demo, bounty, submission }: { demo: DemoState; bounty:
               {c.reject}
             </Button>
           </div>
-          <Disclaimer text={disclaimer} />
         </div>
       ) : null}
 
@@ -556,7 +540,6 @@ function SubmissionCard({ demo, bounty, submission }: { demo: DemoState; bounty:
               {v.reject}
             </Button>
           </div>
-          <Disclaimer text={disclaimer} />
         </div>
       ) : null}
 
@@ -566,7 +549,6 @@ function SubmissionCard({ demo, bounty, submission }: { demo: DemoState; bounty:
       {inReview && ((isYours && connected) || (!posterMode && youVoted && othersToSimulate.length > 0)) ? (
         <div className="flex flex-col gap-2 rounded-xl border border-dashed p-3">
           <p className="text-xs font-bold">{c.simulateTitle}</p>
-          {isYours && posterMode ? <p className="text-xs text-muted-foreground">{c.simulateBody}</p> : null}
           <div className="flex flex-wrap gap-2">
             {isYours && posterMode ? (
               <>
@@ -643,9 +625,9 @@ function History({ demo, bounty }: { demo: DemoState; bounty: Bounty }) {
               />
               <p className="leading-snug">{line(e)}</p>
               <p className="mt-0.5 text-xs text-muted-foreground">
-                <time dateTime={e.at}>{formatDateTime(e.at, locale)}</time>
-                <span aria-hidden="true"> · </span>
-                <span className="font-mono">{shortHash(e.hash, 6, 4)}</span>
+                <time dateTime={e.at} title={e.hash}>
+                  {formatDateTime(e.at, locale)}
+                </time>
               </p>
             </li>
           ))}

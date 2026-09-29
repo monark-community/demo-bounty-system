@@ -6,36 +6,29 @@ import { usePathname } from "next/navigation"
 import type { ReactNode } from "react"
 
 import { Button } from "@/components/ui/button"
-import { NetworkBadge } from "@/components/ui/network-badge"
 import { href } from "@/i18n/config"
 import { waitingOnYou } from "@/lib/demo/select"
 import { useDemo, useStorageOk } from "@/lib/demo/store"
-import { NETWORK_NAME } from "@/lib/demo/tokens"
 import { cn } from "@/lib/utils"
 
 import { useAppCopy } from "./app-provider"
 import { DemoControls } from "./demo-controls"
-import { Disclaimer } from "./disclaimer"
 import { useConnect } from "./use-connect"
 
-/** App chrome under the site header: network, disclaimer, demo controls and the board's sub-navigation. */
+/**
+ * App chrome under the site header: ONE compact bar with the board's sections
+ * on the left, and the network + demo controls pill and "Post a bounty" on the
+ * right. No testnet strip: that line lives in the wallet prompt, once per
+ * transaction (brand guidelines §8 "Restraint", §11).
+ */
 export function AppFrame({ children }: { children: ReactNode }) {
   const demo = useDemo()
   const storageOk = useStorageOk()
-  const { app, disclaimer } = useAppCopy()
+  const { app } = useAppCopy()
 
   return (
     <div className="flex flex-1 flex-col">
-      <div className="border-b bg-secondary/40">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-2.5 sm:px-6">
-          <NetworkBadge name={NETWORK_NAME} variant="outline" icon={<span className="block size-full rounded-full bg-success" />} />
-          <Disclaimer text={disclaimer} className="order-last min-w-0 basis-full sm:order-none sm:basis-auto sm:flex-1" />
-          <div className="ml-auto sm:ml-0">
-            <DemoControls />
-          </div>
-        </div>
-      </div>
-      <SubNav />
+      <AppBar />
       {!storageOk ? (
         <p role="alert" className="mx-auto mt-4 w-full max-w-6xl px-4 text-sm text-warning sm:px-6">
           {app.storageError}
@@ -48,7 +41,7 @@ export function AppFrame({ children }: { children: ReactNode }) {
   )
 }
 
-function SubNav() {
+function AppBar() {
   const { app, locale } = useAppCopy()
   const demo = useDemo()
   const pathname = usePathname() ?? ""
@@ -63,37 +56,44 @@ function SubNav() {
   const postActive = pathname.startsWith(`${base}/new`)
 
   return (
-    <div className="border-b">
-      <nav aria-label={n.label} className="mx-auto flex max-w-6xl items-center gap-2 px-4 py-2 sm:px-6">
-        <ul className="-mx-1 flex min-w-0 flex-1 items-center gap-1 overflow-x-auto px-1 py-1">
-          {items.map((item) => (
-            <li key={item.href} className="shrink-0">
-              <Link
-                href={item.href}
-                aria-current={item.active ? "page" : undefined}
-                className={cn(
-                  "inline-flex h-9 items-center gap-1.5 rounded-full px-3.5 text-sm font-semibold transition-colors duration-150",
-                  item.active ? "bg-secondary text-foreground" : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                {item.label}
-                {item.count ? (
-                  <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[0.6875rem] font-extrabold text-primary-foreground">
-                    {item.count}
-                  </span>
-                ) : null}
+    <div className="border-b bg-secondary/40">
+      <div className="mx-auto flex min-h-13 max-w-6xl items-center gap-1.5 px-4 sm:gap-2 sm:px-6">
+        <nav aria-label={n.label} className="min-w-0 flex-1">
+          <ul className="-mx-1 flex min-w-0 items-center gap-0.5 overflow-x-auto px-1 py-2 [scrollbar-width:none] sm:gap-1">
+            {items.map((item) => (
+              <li key={item.href} className="shrink-0">
+                <Link
+                  href={item.href}
+                  aria-current={item.active ? "page" : undefined}
+                  className={cn(
+                    "inline-flex h-9 items-center gap-1.5 rounded-full px-2 text-sm font-semibold transition-colors duration-150 sm:px-3.5",
+                    item.active ? "bg-card text-foreground ring-1 ring-border" : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  {item.label}
+                  {item.count ? (
+                    <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[0.6875rem] font-extrabold text-primary-foreground">
+                      {item.count}
+                    </span>
+                  ) : null}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+        <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+          <DemoControls />
+          {!postActive ? (
+            <Button asChild size="sm" className="px-2.5 sm:px-3">
+              <Link href={`${base}/new`}>
+                <PlusIcon aria-hidden="true" />
+                <span className="hidden sm:inline">{n.post}</span>
+                <span className="sr-only sm:hidden">{n.post}</span>
               </Link>
-            </li>
-          ))}
-        </ul>
-        <Button asChild size="sm" variant={postActive ? "outline" : "default"} className="shrink-0">
-          <Link href={`${base}/new`} aria-current={postActive ? "page" : undefined}>
-            <PlusIcon aria-hidden="true" />
-            <span className="hidden sm:inline">{n.post}</span>
-            <span className="sr-only sm:hidden">{n.post}</span>
-          </Link>
-        </Button>
-      </nav>
+            </Button>
+          ) : null}
+        </div>
+      </div>
     </div>
   )
 }
@@ -114,7 +114,7 @@ export function AppLoading({ label }: { label: string }) {
   )
 }
 
-/** Inline invitation to connect, used wherever an action needs a wallet. */
+/** Inline invitation to connect, used wherever an action needs a wallet: one line and the button. */
 export function ConnectCard({ className, compact = false }: { className?: string; compact?: boolean }) {
   const demo = useDemo()
   const { app } = useAppCopy()
@@ -125,12 +125,7 @@ export function ConnectCard({ className, compact = false }: { className?: string
 
   return (
     <section aria-label={g.title} className={cn("flex flex-col gap-3 rounded-2xl border border-dashed bg-card p-4 sm:p-5", className)}>
-      {!compact ? (
-        <div>
-          <h2 className="font-bold">{g.title}</h2>
-          <p className="mt-1 text-sm text-muted-foreground">{g.body}</p>
-        </div>
-      ) : null}
+      {!compact ? <h2 className="font-bold">{g.title}</h2> : null}
       <Button className="self-start" disabled={connecting} onClick={() => void connect()}>
         {connecting ? <Loader2Icon className="animate-spin" aria-hidden="true" /> : <WalletIcon aria-hidden="true" />}
         {connecting ? app.wallet.connecting : g.button}

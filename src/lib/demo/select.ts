@@ -74,22 +74,17 @@ export function rankOf(s: DemoState, personId: string): { rank: number; total: n
 export interface BoardSummary {
   open: number
   lockedUsd: number
-  paidUsd: number
 }
 
 export function boardSummary(s: DemoState): BoardSummary {
   let open = 0
   let lockedUsd = 0
-  let paidUsd = 0
   for (const b of s.bounties) {
-    if (b.status === "open") {
-      if (!isClosed(b)) open += 1
-      lockedUsd += usdValue(b.reward, b.token)
-    } else if (b.status === "paid") {
-      paidUsd += usdValue(b.reward, b.token)
-    }
+    if (b.status !== "open") continue
+    if (!isClosed(b)) open += 1
+    lockedUsd += usdValue(b.reward, b.token)
   }
-  return { open, lockedUsd, paidUsd }
+  return { open, lockedUsd }
 }
 
 export interface WaitingItem {

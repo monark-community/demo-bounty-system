@@ -1,6 +1,6 @@
 "use client"
 
-import { ArrowRightIcon, GavelIcon, ShieldCheckIcon, TrophyIcon, VoteIcon } from "lucide-react"
+import { ArrowRightIcon, GavelIcon, TrophyIcon, VoteIcon } from "lucide-react"
 import Link from "next/link"
 import { useState } from "react"
 
@@ -26,12 +26,7 @@ export function YourWork() {
   const [now] = useState(() => Date.now())
   if (!demo) return null
 
-  const header = (
-    <header className="max-w-3xl">
-      <h1 className="text-3xl font-extrabold tracking-display sm:text-4xl">{y.title}</h1>
-      <p className="mt-3 text-muted-foreground">{y.intro}</p>
-    </header>
-  )
+  const header = <h1 className="text-3xl font-extrabold tracking-display sm:text-4xl">{y.title}</h1>
   if (demo.wallet.status !== "connected") {
     return (
       <div className="flex flex-col gap-8">
@@ -164,12 +159,6 @@ export function YourWork() {
         )}
       </section>
 
-      <p className="flex items-center gap-2 text-sm text-muted-foreground">
-        <ShieldCheckIcon className="size-4 text-primary" aria-hidden="true" />
-        <Link href={href(locale, "/app/leaderboard")} className="font-semibold text-primary-ink underline underline-offset-4">
-          {app.toasts.leaderboard}
-        </Link>
-      </p>
     </div>
   )
 }

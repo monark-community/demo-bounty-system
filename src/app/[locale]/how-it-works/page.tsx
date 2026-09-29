@@ -1,4 +1,16 @@
-import { ArrowRightIcon, CheckIcon, GavelIcon, MegaphoneIcon, MessageSquareWarningIcon, ShieldIcon, UndoIcon, UsersIcon, VoteIcon, GlobeIcon } from "lucide-react"
+import {
+  ArrowRightIcon,
+  CheckIcon,
+  ChevronDownIcon,
+  GavelIcon,
+  MegaphoneIcon,
+  MessageSquareWarningIcon,
+  ShieldIcon,
+  UndoIcon,
+  UsersIcon,
+  VoteIcon,
+  GlobeIcon,
+} from "lucide-react"
 import type { Metadata } from "next"
 import Link from "next/link"
 import { notFound } from "next/navigation"
@@ -50,12 +62,14 @@ export default async function HowItWorksPage({ params }: PageProps<"/[locale]/ho
   return (
     <>
       <section className="mx-auto w-full max-w-6xl px-4 pt-12 pb-12 sm:px-6 lg:pt-16">
-        <p className="eyebrow text-primary-ink">{h.eyebrow}</p>
-        <h1 className="mt-4 max-w-3xl text-4xl font-extrabold tracking-display sm:text-5xl">{h.title}</h1>
+        <h1 className="max-w-3xl text-4xl font-extrabold tracking-display sm:text-5xl">{h.title}</h1>
         <p className="mt-5 max-w-[62ch] text-lg text-muted-foreground">{h.intro}</p>
       </section>
 
-      <section aria-labelledby="escrow-title" className="mx-auto grid w-full max-w-6xl gap-8 px-4 pb-16 sm:px-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:items-center">
+      <section
+        aria-labelledby="escrow-title"
+        className="mx-auto grid w-full max-w-6xl gap-8 px-4 pb-16 sm:px-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:items-center"
+      >
         <div>
           <h2 id="escrow-title" className="text-3xl font-bold tracking-display sm:text-[2rem]">
             {h.escrow.title}
@@ -72,8 +86,6 @@ export default async function HowItWorksPage({ params }: PageProps<"/[locale]/ho
         </div>
         <EscrowDiagram labels={h.escrow.diagram} />
       </section>
-
-      <SectionDivider />
 
       <section aria-labelledby="decide-title" className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6">
         <h2 id="decide-title" className="text-3xl font-bold tracking-display sm:text-[2rem]">
@@ -128,12 +140,9 @@ export default async function HowItWorksPage({ params }: PageProps<"/[locale]/ho
             {h.visibility.items.map((item, i) => {
               const Icon = visIcons[i] ?? GlobeIcon
               return (
-                <li key={item.title} className="flex items-start gap-3 rounded-2xl border bg-card p-4">
-                  <Icon className="mt-0.5 size-5 shrink-0 text-primary" strokeWidth={1.75} aria-hidden="true" />
-                  <span>
-                    <span className="block font-bold">{item.title}</span>
-                    <span className="block text-sm text-muted-foreground">{item.body}</span>
-                  </span>
+                <li key={item} className="flex items-center gap-3 rounded-2xl border bg-card p-4 font-bold">
+                  <Icon className="size-5 shrink-0 text-primary" strokeWidth={1.75} aria-hidden="true" />
+                  {item}
                 </li>
               )
             })}
@@ -174,42 +183,46 @@ export default async function HowItWorksPage({ params }: PageProps<"/[locale]/ho
           {h.devs.title}
         </h2>
         <p className="mt-4 max-w-[68ch] text-muted-foreground">{h.devs.body}</p>
-        <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
-          <figure className="min-w-0">
-            <figcaption className="text-sm font-bold">{h.devs.codeLabel}</figcaption>
-            <pre className="mt-3 overflow-x-auto rounded-2xl border bg-card p-4 font-mono text-xs leading-relaxed">
-              <code>{INTERFACE}</code>
-            </pre>
-          </figure>
-          <div className="flex flex-col gap-4">
-            <ul className="flex flex-col divide-y rounded-2xl border bg-card">
-              {h.devs.files.map((f) => (
-                <li key={f.file} className="flex flex-col gap-0.5 px-4 py-3">
-                  <code className="font-mono text-xs font-bold text-primary-ink">src/lib/demo/{f.file}</code>
-                  <span className="text-sm text-muted-foreground">{f.note}</span>
-                </li>
-              ))}
-            </ul>
-            <ul className="flex flex-col gap-2 text-sm text-muted-foreground">
-              {h.devs.notes.map((n) => (
-                <li key={n} className="flex items-start gap-2">
-                  <span className="mt-2 size-1.5 shrink-0 rounded-full bg-primary" aria-hidden="true" />
-                  {n}
-                </li>
-              ))}
-            </ul>
+        {/* Context on demand: the contract interface and the data layer map sit behind a disclosure. */}
+        <details className="group mt-6 rounded-2xl border bg-card">
+          <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-4 px-5 py-3 font-bold [&::-webkit-details-marker]:hidden">
+            {h.devs.show}
+            <ChevronDownIcon className="size-5 shrink-0 transition-transform duration-200 group-open:rotate-180" aria-hidden="true" />
+          </summary>
+          <div className="grid gap-6 border-t p-4 sm:p-5 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
+            <figure className="min-w-0">
+              <figcaption className="text-sm font-bold">{h.devs.codeLabel}</figcaption>
+              <pre className="mt-3 overflow-x-auto rounded-2xl border bg-card p-4 font-mono text-xs leading-relaxed">
+                <code>{INTERFACE}</code>
+              </pre>
+            </figure>
+            <div className="flex flex-col gap-4">
+              <ul className="flex flex-col divide-y rounded-2xl border bg-card">
+                {h.devs.files.map((f) => (
+                  <li key={f.file} className="flex flex-col gap-0.5 px-4 py-3">
+                    <code className="font-mono text-xs font-bold text-primary-ink">src/lib/demo/{f.file}</code>
+                    <span className="text-sm text-muted-foreground">{f.note}</span>
+                  </li>
+                ))}
+              </ul>
+              <ul className="flex flex-col gap-2 text-sm text-muted-foreground">
+                {h.devs.notes.map((n) => (
+                  <li key={n} className="flex items-start gap-2">
+                    <span className="mt-2 size-1.5 shrink-0 rounded-full bg-primary" aria-hidden="true" />
+                    {n}
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
-        </div>
+        </details>
       </section>
 
       <section aria-labelledby="cta-title" className="mx-auto w-full max-w-6xl px-4 pb-20 sm:px-6">
         <div className="flex flex-col gap-6 rounded-3xl border-2 border-primary bg-card p-6 sm:p-10 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h2 id="cta-title" className="text-3xl font-bold tracking-display">
-              {h.cta.title}
-            </h2>
-            <p className="mt-3 text-muted-foreground">{h.cta.body}</p>
-          </div>
+          <h2 id="cta-title" className="text-3xl font-bold tracking-display">
+            {h.cta.title}
+          </h2>
           <Button asChild size="lg" className="shrink-0">
             <Link href={href(locale, "/app")}>
               {h.cta.button}

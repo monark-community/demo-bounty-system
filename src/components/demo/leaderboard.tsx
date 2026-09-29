@@ -1,5 +1,6 @@
 "use client"
 
+import { InfoTip } from "@/components/ui/info-tip"
 import { WalletAvatar } from "@/components/ui/wallet"
 import { t } from "@/i18n/t"
 import { formatNumber, formatUsdWhole } from "@/lib/format"
@@ -21,15 +22,26 @@ export function Leaderboard() {
 
   return (
     <div className="flex flex-col gap-8">
-      <header className="max-w-3xl">
-        <h1 className="text-3xl font-extrabold tracking-display sm:text-4xl">{l.title}</h1>
-        <p className="mt-3 text-muted-foreground">{l.intro}</p>
-      </header>
+      <div className="flex items-center gap-1.5">
+        <h1 id="leaderboard-title" className="text-3xl font-extrabold tracking-display sm:text-4xl">
+          {l.title}
+        </h1>
+        {/* Context on demand: how points are earned. */}
+        <InfoTip label={l.howTitle}>
+          <p className="font-bold">{l.howTitle}</p>
+          <dl className="mt-2 divide-y">
+            {DIFFICULTIES.map((d) => (
+              <div key={d} className="flex justify-between gap-6 py-1.5">
+                <dt>{labels.difficulty[d]}</dt>
+                <dd className="font-bold">+{t(labels.points, { n: REPUTATION[d] })}</dd>
+              </div>
+            ))}
+          </dl>
+        </InfoTip>
+      </div>
 
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-start">
-        <div className="overflow-hidden rounded-2xl border bg-card">
-          <table className="w-full text-sm">
-            <caption className="sr-only">{l.title}</caption>
+      <div className="overflow-hidden rounded-2xl border bg-card">
+          <table aria-labelledby="leaderboard-title" className="w-full text-sm">
             <thead className="border-b bg-muted/40 text-left text-xs text-muted-foreground">
               <tr>
                 <th scope="col" className="w-12 px-3 py-3 font-semibold sm:px-4">
@@ -84,20 +96,6 @@ export function Leaderboard() {
               })}
             </tbody>
           </table>
-        </div>
-
-        <aside className="rounded-2xl border bg-card p-4">
-          <h2 className="font-bold">{l.howTitle}</h2>
-          <p className="mt-1 text-sm text-muted-foreground">{l.howBody}</p>
-          <dl className="mt-3 divide-y text-sm">
-            {DIFFICULTIES.map((d) => (
-              <div key={d} className="flex justify-between py-2">
-                <dt>{labels.difficulty[d]}</dt>
-                <dd className="font-bold">+{t(labels.points, { n: REPUTATION[d] })}</dd>
-              </div>
-            ))}
-          </dl>
-        </aside>
       </div>
     </div>
   )

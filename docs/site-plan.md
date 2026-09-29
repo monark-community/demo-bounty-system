@@ -1,6 +1,6 @@
 # TaskFlow by Monark: site plan
 
-Status: shipped on `develop`. This plan describes what the site does; it is kept in sync with the code (see §12 for decisions taken while building).
+Status: shipped on `develop`. This plan describes what the site does; it is kept in sync with the code (see §12 for decisions taken while building). A simplification pass (less text, context on demand, one top bar, the standard header) is recorded in `docs/simplification.md`.
 
 - Product: **TaskFlow**, Monark's bounty module.
 - Authoritative description: https://www.monark.io/en/project/bounty-system
@@ -60,10 +60,10 @@ Supporting benefits, as outcomes:
 
 - **Headline** (8 words): *Post the task. Lock the reward. Pay on approval.*
   FR: *Publiez la tâche. Bloquez la récompense. Payez à l'approbation.*
-- **Subheadline:** *TaskFlow is Monark's bounty board. The reward sits in escrow from day one, contributors submit their work, and the moment it's approved, the payout lands in their wallet.*
-  FR: *TaskFlow est le tableau de primes de Monark. La récompense est bloquée en séquestre dès le premier jour, les contributeurs soumettent leur travail, et dès qu'il est approuvé, le paiement arrive dans leur portefeuille.*
+- **Subheadline:** *The reward sits in escrow until the work is approved, then pays out at once.*
+  FR: *La récompense reste en séquestre jusqu'à l'approbation du travail, puis part aussitôt.*
 - **Primary CTA:** "Open the bounty board" / « Ouvrir le tableau des primes » → `/{locale}/app`.
-- **Secondary CTA:** "See how it works" / « Voir le fonctionnement » → `/{locale}/how-it-works`.
+- **Secondary CTA:** "How it works" / « Fonctionnement » → `/{locale}/how-it-works`.
 - **Visual:** a **live bounty ticket** built in code (JSX + SVG): a real-looking bounty ("Translate the Governance docs into French · 300 tUSDC") whose lifecycle rail steps through *Reward locked → Submission received → Approved → Paid* on a calm loop. The reward chip sits inside an escrow bracket while locked, then an orange line draws from the escrow to the contributor's avatar and the amount lands in their wallet, with "+25 reputation" ticking up. Product UI over a photo because the ticket *is* the promise (money locked, then released on approval); photos appear lower down to show who uses it. The mesh butterfly sits large and cropped behind it (see §8).
 
 ## 4. Page map
@@ -72,24 +72,24 @@ All routes live under `/{locale}` (`en`, `fr`). `/` and any locale-less path red
 
 | Route | Purpose | Sections, in order |
 |-|-|-|
-| `/{locale}` | Home: explain the idea in 30 seconds and send people into the board. | Hero with live bounty ticket · Three outcomes · A bounty's life in four steps (line-art rail) · Open right now (three real bounty cards from the demo data) · Who posts on TaskFlow (three photo cards) · FAQ · Closing call to action |
-| `/{locale}/app` | The bounty board: browse and filter. | Connect gate (when disconnected: board still readable, actions ask to connect) · Summary strip (open bounties, locked in escrow, paid out, your reputation) · Filters (search, status, category, "I can submit") · Bounty list · Demo controls |
-| `/{locale}/app/bounty/[id]` | One bounty: brief, escrow, submissions, decision. | Header (title, poster, status, visibility, category, difficulty) · Escrow panel (amount, contract address, lock tx, deadline countdown) · Brief and acceptance criteria · Your action (submit work, or why you can't) · Submissions (per review mode: approve / reject with note, or validator tally and vote) · Activity (every event with tx hash) |
-| `/{locale}/app/new` | Post a bounty and lock its reward. | Templates · Task (title, description, acceptance criteria) · Category, difficulty, skills · Reward and token (with wallet balance) · Deadline · Who can submit · Who decides (you, or validators with quorum) · Live preview card · Lock reward and publish |
+| `/{locale}` | Home: explain the idea in 30 seconds and send people into the board. | Hero with live bounty ticket (no eyebrow, no disclaimer) · A bounty's life in four steps (line-art rail; replaces the former "three outcomes", which restated it) · Open right now (three real bounty cards from the demo data) · Who posts on TaskFlow (three photo cards) · FAQ (5 questions) · Closing call to action (heading + button) |
+| `/{locale}/app` | The bounty board: browse and filter. | Title (no intro) · Summary (open bounties, locked in escrow, your reputation) · Connect card when disconnected (one line + button; board still readable) · Filters (search, status, category, "I can submit") · Bounty list, 4 at a time + "Show more bounties" |
+| `/{locale}/app/bounty/[id]` | One bounty: brief, escrow, submissions, decision. | Header (status, poster, title) · Escrow panel (rail with the locked amount, contract address, lock tx; "why" behind an info icon) · Brief and acceptance criteria · Your move (submit work, or one line on why you can't) · Submissions (per review mode: approve / reject with note, or validator tally and vote; hashes in tooltips) · Details · History (hash in each date's tooltip) |
+| `/{locale}/app/new` | Post a bounty and lock its reward. | Title (no intro) · Templates · Task (title, description, acceptance criteria) · Category, difficulty, skills · Reward and token (with wallet balance) · Deadline · Who can submit · Who decides (you, or validators with quorum) · Live preview card · Lock reward and publish (hints are the constraints only) |
 | `/{locale}/app/you` | Your work in one place. | Reputation card · Waiting on you (submissions to review, votes to cast) · Your submissions (with status and rejection notes) · Bounties you posted |
-| `/{locale}/app/leaderboard` | Contributor leaderboard and reputation. | Top contributors (rank, reputation, approved bounties, earned) · Your position · How points are earned |
-| `/{locale}/how-it-works` | For students, developers and careful posters: the mechanics. Justified because the documentation frames TaskFlow as a teaching project ("smart contract security, reward logic, role assignment… validator rotation"), and validator voting, refunds and reputation need more than a home-page line. | Intro · Escrow: where the reward lives (diagram) · Two ways to decide (poster review vs validator vote, quorum diagram) · Rejections and refunds · Visibility by role · Reputation · For developers (contract interface and how the demo's data layer mirrors it) · Call to action |
+| `/{locale}/app/leaderboard` | Contributor leaderboard and reputation. | Top contributors (rank, reputation, approved bounties, earned) · Your position · Points per difficulty behind an info icon next to the title |
+| `/{locale}/how-it-works` | For students, developers and careful posters: the mechanics. Justified because the documentation frames TaskFlow as a teaching project ("smart contract security, reward logic, role assignment… validator rotation"), and validator voting, refunds and reputation need more than a home-page line. | One-line intro · Escrow: where the reward lives (diagram) · Two ways to decide (poster review vs validator vote, quorum diagram) · Rejections and refunds · Visibility by role · Reputation · For developers (one line; contract interface, data-layer map and notes behind "Show the contract interface") · Call to action (heading + button) |
 | `/{locale}/credits` | Photo, font and icon credits (required by the asset rules). | Photos · Type and icons · Monark brand assets |
 | `/{locale}/pricing` | **Internal strategy review only.** Never linked, excluded from the sitemap, `noindex, nofollow`. | "Free, part of Monark" · What it costs (gas only, 0% fee on rewards) · Partner deployments · Reasoning |
 | 404 | Friendly not-found with the vertical Monark logo and links home and to the board. | |
 
 Why `/app/you` and `/app/leaderboard` are separate routes rather than tabs: both are documented features (reputation, leaderboard), both are linked from bounty pages and toasts ("+25 reputation, see the leaderboard"), and deep links make the flows screenshot- and share-friendly.
 
-**Header** (standard Monark shell): "TaskFlow by Monark" pairing → home · links: *Overview*, *How it works*, *Bounty board* (pill highlight on the active one) · EN/FR switch · theme toggle · primary pill *Open the board*. Inside `/app` the primary action becomes the `connect-wallet` component and a "Demo · simulated data" badge appears. Mobile: pairing + menu button opening a full-height sheet.
+**Header** (standard Monark shell, guidelines §2 and §10, one bar on every marketing page): butterfly mark 28px + "TaskFlow" (Nunito Sans 800, 18px), no "by Monark" · links left after the brand: *Overview*, *How it works*, *Bounty board* (muted, active in foreground) · right: Demo chip (primary 8% light / 15% dark, primary-ink) → EN/FR pill → 36px theme toggle → primary *Open the board*. Inside `/app` the primary action becomes the `connect-wallet` component. Below `lg`: brand + menu button; the sheet holds the links, Demo chip, EN/FR, theme and the action.
 
-**App sub-navigation** (inside `/app`): *Board* · *Your work* (with a count of things waiting on you) · *Leaderboard* · primary pill *Post a bounty*.
+**App bar** (inside `/app`, the only bar under the header): *Board* · *Your work* (with a count of things waiting on you) · *Leaderboard* on the left; on the right one pill "● Sepolia testnet ⚙" that opens Demo controls (icon-only on phones) and *Post a bounty* (icon-only on phones, hidden on the composer). No testnet strip.
 
-**Footer** (three bands): product line + links (Overview, How it works, Bounty board, Credits) · Monark logo + tagline, links to the project page on monark.io and the GitHub repo, social icons · "© {year} Monark · Open source", "Demo · simulated data", photo credits link.
+**Footer** (three bands): product line (10 words) + links (Overview, How it works, Bounty board, Credits) · "TaskFlow is built by Monark" / « TaskFlow est conçu par Monark », Monark logo + tagline, links to the project page on monark.io and the GitHub repo, social icons · "© {year} Monark · Open source", "Demo · simulated data", photo credits link (the testnet line is not in the footer).
 
 ## 5. Feature highlights
 
@@ -98,79 +98,70 @@ Why `/app/you` and `/app/leaderboard` are separate routes rather than tabs: both
 | Reward locked in escrow | Contributors start knowing they will be paid | Hero ticket; home steps; composer; bounty escrow panel | Flow 2 |
 | Pay on approval | Payout is instant and automatic; nobody chases anyone | Hero ticket; bounty page submissions | Flows 3, 4 |
 | Rejection notes | A "no" always comes with a reason you can act on | Bounty page; Your work | Flows 3, 4 |
-| Validator vote (quorum) | Sensitive or high-value work is decided by several people | Home FAQ; `/how-it-works`; bounty page tally | Flow 5 |
+| Validator vote (quorum) | Sensitive or high-value work is decided by several people | Home steps and FAQ; `/how-it-works`; bounty page tally | Flow 5 |
 | Visibility by role | Programmes (ambassadors, members) can reserve work for their people | Board filter "I can submit"; bounty page; composer | Flow 3 (locked variant) |
 | Reputation and leaderboard | Good work builds a public track record | Hero (+points); `/app/you`; `/app/leaderboard` | Flows 3, 4, 5 |
 
 ## 6. Key flows
 
-Every transaction goes through a simulated wallet prompt ("Confirm in your wallet": what happens, amount, estimated network fee, the testnet disclaimer, *Confirm* / *Reject*), then a **pending** state with a transaction hash (1.2–2.4 s; 3–6 s with "slow network" on), then **confirmed** or **failed**. Demo controls let a visitor make the next transaction fail on-chain; rejecting in the wallet prompt always produces the "rejected" failure, and nothing changes.
+Every transaction goes through a simulated wallet prompt ("Confirm in your wallet": what happens, amount, estimated network fee, the testnet disclaimer (its only place on the site, once per transaction), *Confirm* / *Reject*), then a **pending** state with a transaction hash (1.2–2.4 s; 3–6 s with "slow network" on), then **confirmed** or **failed**. Demo controls let a visitor make the next transaction fail on-chain; rejecting in the wallet prompt always produces the "rejected" failure, and nothing changes.
 
-1. **Connect a wallet.** On `/app` (board readable) → any action or "Connect demo wallet" → wallet prompt "Sign in to TaskFlow" (a signature, no fee) → *pending* "Waiting for signature…" → *connected*: header chip (Jazzicon + `0x5c21…a7E4`), summary shows "Your reputation". *Failed*: "You declined the sign-in request. Nothing was shared." with *Try again*.
-2. **Post a bounty and lock the reward.** *Post a bounty* → template or blank → title, description, acceptance criteria (one per line), category, difficulty → reward (amount + token, shows wallet balance; "You only have 1,240 tUSDC" error above balance) → deadline (at least tomorrow) → who can submit → who decides (you, or validators with 2 of 3) → live preview card → *Lock 600 tUSDC and publish* → wallet prompt → *pending* "Locking the reward in escrow…" (the reward chip slides into the escrow bracket) → *confirmed*: redirect to the new bounty, escrow panel shows the locked amount, contract address and lock tx; toast "Bounty published. 600 tUSDC is locked in escrow." *Failed*: "The transaction failed on the simulated network. Your tokens never left your wallet." with *Try again*; the form stays filled.
+1. **Connect a wallet.** On `/app` (board readable) → any action or "Connect demo wallet" → wallet prompt "Sign in to TaskFlow" (a signature, no fee) → *pending* "Waiting for signature…" → *connected*: header chip (Jazzicon + `0x5c21…a7E4`), summary shows "Your reputation" (no toast). *Failed*: "You declined the sign-in. Nothing was shared." with *Try again*.
+2. **Post a bounty and lock the reward.** *Post a bounty* → template or blank → title, description, acceptance criteria (one per line), category, difficulty → reward (amount + token, shows wallet balance; "You only have 1,240 tUSDC" error above balance) → deadline (at least tomorrow) → who can submit → who decides (you, or validators with 2 of 3) → live preview card → *Lock 600 tUSDC and publish* → wallet prompt → *pending* "Locking the reward in escrow…" (the reward chip slides into the escrow bracket) → *confirmed*: redirect to the new bounty, escrow panel shows the locked amount, contract address and lock tx (no toast: the page is the confirmation). *Failed*: "The transaction failed on the simulated network. Your tokens never left your wallet." with *Try again*; the form stays filled.
 3. **Submit work, and hear back.** Open bounty → *Submit your work* → link (validated URL), note (20–600 characters), confirm "My work meets the acceptance criteria" → wallet prompt "Record your submission" → *pending* → *confirmed*: your submission appears "Waiting for review" with a timestamp and hash. In the demo the other side is simulated: *Simulate the poster's decision → Approve* or *→ Reject* (in demo controls on the submission) → approval: escrow releases to your wallet, your balance and reputation tick up, bounty shows *Paid*; rejection: the note appears ("The French glossary is missing; please add the term list from section 3."), you may resubmit before the deadline. **Blocked variants:** deadline passed ("Submissions closed on {date}"), visibility ("Only ambassadors can submit. Everyone can read it."), already submitted, poster can't submit to their own bounty. *Failed*: "Your submission wasn't recorded. Nothing was sent; try again."
 4. **Review submissions on your bounty.** *Your work → Waiting on you* or your bounty ("Write integration tests for the Trust Contacts API", 2 submissions) → compare submissions (link, note, time) → **Approve** → wallet prompt "Release 600 tUSDC to Priya Raman" → *pending* → *confirmed*: the escrow line draws to the contributor, "Paid" stamp, other submissions become "Not selected", reputation +50 shown on the contributor. Or **Reject** → note required (10+ characters) → wallet prompt → *pending* → *confirmed*: submission shows "Rejected" with the note. **Cancel and refund** is available while no submission is waiting (e.g. after rejecting both) → prompt → escrow returns to your wallet. *Failed*: "The payout failed. The reward is still safely in escrow; nobody was paid." with *Retry*.
 5. **Vote as a validator.** "Audit the escrow release function" (2,000 tUSDC, validator vote, 2 of 3) → submission by Kwame Mensah has 1 of 3 approvals (Aïcha Diallo) → you vote *Approve* or *Reject* (reason optional for approve, required for reject) → wallet prompt → *pending* → *confirmed*: your dot fills, the tally settles to 2 of 3, the quorum marker locks and the payout executes in the same transaction (escrow line, "Paid"). A reject vote leaves it at 1 approve / 1 reject, waiting for the third validator (*Simulate Marc-Antoine's vote*). *Failed*: "Your vote wasn't counted. Try again."
 
 ## 7. Content (EN / FR)
 
-The shipped copy lives in `src/i18n/dictionaries/en.ts` and `fr.ts` (typed; French must satisfy the English shape). Draft copy for the main sections:
+The shipped copy lives in `src/i18n/dictionaries/en.ts` and `fr.ts` (typed; French must satisfy the English shape). The tables below are the copy after the simplification pass; the dictionaries are the source of truth.
 
 ### Home
 
 | Slot | English | Français |
 |-|-|-|
-| Eyebrow | Bounty module · Monark | Module de primes · Monark |
 | H1 | Post the task. Lock the reward. Pay on approval. | Publiez la tâche. Bloquez la récompense. Payez à l'approbation. |
-| Sub | TaskFlow is Monark's bounty board. The reward sits in escrow from day one, contributors submit their work, and the moment it's approved, the payout lands in their wallet. | TaskFlow est le tableau de primes de Monark. La récompense est bloquée en séquestre dès le premier jour, les contributeurs soumettent leur travail, et dès qu'il est approuvé, le paiement arrive dans leur portefeuille. |
-| CTAs | Open the bounty board · See how it works | Ouvrir le tableau des primes · Voir le fonctionnement |
-| Outcomes H2 | Work gets done. People get paid. Nobody chases anyone. | Le travail avance. Les gens sont payés. Personne ne court après personne. |
-| Outcome 1 | **Start knowing the money is there.** Every reward is locked in escrow before the bounty opens, and it can't be quietly withdrawn while you work. | **Commencez en sachant que l'argent est là.** Chaque récompense est bloquée en séquestre avant l'ouverture de la prime, et personne ne peut la retirer en douce pendant que vous travaillez. |
-| Outcome 2 | **Paid the minute it's approved.** Approval and payout are the same transaction. No invoice, no reminder, no waiting for the treasurer. | **Payé dès l'approbation.** Approuver et payer, c'est la même transaction. Pas de facture, pas de relance, pas d'attente. |
-| Outcome 3 | **Decisions you can check.** Every rejection comes with a reason, sensitive work is decided by a vote, and reputation comes only from approved work. | **Des décisions vérifiables.** Chaque refus est motivé, le travail sensible est tranché par un vote, et la réputation ne vient que du travail approuvé. |
+| Sub | The reward sits in escrow until the work is approved, then pays out at once. | La récompense reste en séquestre jusqu'à l'approbation du travail, puis part aussitôt. |
+| CTAs | Open the bounty board · How it works | Ouvrir le tableau des primes · Fonctionnement |
 | Steps H2 | A bounty's life, in four steps | La vie d'une prime, en quatre étapes |
 | Step 1 | **Post and lock.** Describe the task and lock the reward in escrow. | **Publier et bloquer.** Décrivez la tâche et bloquez la récompense en séquestre. |
-| Step 2 | **Submit.** Anyone allowed can send a link to their work before the deadline. | **Soumettre.** Toute personne autorisée envoie le lien de son travail avant l'échéance. |
-| Step 3 | **Review or vote.** The poster decides, or a council of validators votes. | **Évaluer ou voter.** L'auteur tranche, ou un conseil de validateurs vote. |
-| Step 4 | **Paid.** The escrow pays the contributor and their reputation grows. | **Payé.** Le séquestre paie le contributeur et sa réputation grandit. |
-| Open now H2 | Open right now on the demo board | Ouvert en ce moment sur le tableau de démo |
+| Step 2 | **Submit.** Anyone allowed sends a link before the deadline. | **Soumettre.** Les personnes autorisées envoient un lien avant l'échéance. |
+| Step 3 | **Review or vote.** The poster decides, or validators vote. | **Évaluer ou voter.** L'auteur tranche, ou des validateurs votent. |
+| Step 4 | **Paid.** The escrow pays out and reputation grows. | **Payé.** Le séquestre paie et la réputation grandit. |
+| Open now H2 | Open right now | Ouvert en ce moment |
 | Who H2 | Who posts on TaskFlow | Qui publie sur TaskFlow |
-| Open source | **Open-source maintainers.** Put a reward on the issue nobody has time for, and merge the fix the day it's paid. | **Mainteneurs open source.** Mettez une récompense sur le ticket que personne n'a le temps de traiter, et fusionnez le correctif le jour où il est payé. |
-| Student challenges | **Student challenges.** Run a hackathon or a class challenge where the prize is locked before the first line of code. | **Défis étudiants.** Organisez un hackathon ou un défi de cours dont le prix est bloqué avant la première ligne de code. |
-| Community programmes | **Ambassador programmes.** Reserve tasks for your ambassadors and let a small council approve the results. | **Programmes d'ambassadeurs.** Réservez des tâches à vos ambassadeurs et laissez un petit conseil approuver les résultats. |
-| Closing | Your first bounty takes two minutes to post. / Post a bounty | Votre première prime se publie en deux minutes. / Publier une prime |
+| Open source | **Open-source maintainers.** Put a reward on the issue nobody has time for. | **Mainteneurs open source.** Récompensez le ticket que personne n'a le temps de traiter. |
+| Student challenges | **Student challenges.** Lock the prize before the first line of code. | **Défis étudiants.** Bloquez le prix avant la première ligne de code. |
+| Community programmes | **Ambassador programmes.** Reserve tasks for ambassadors; a small council approves. | **Programmes d'ambassadeurs.** Des tâches réservées aux ambassadeurs, approuvées par un petit conseil. |
+| Closing | Post your first bounty in two minutes. / Post a bounty | Publiez votre première prime en deux minutes. / Publier une prime |
 
-**FAQ**
+**FAQ** (the only FAQ on the site; mechanics such as reputation points live on `/how-it-works`)
 
-1. *Is this real money?* No. This is a testnet demo with simulated data: no real funds, no real wallet, nothing leaves your browser. / *Est-ce de l'argent réel ?* Non. C'est une démo sur testnet avec des données simulées : aucun fonds réel, aucun vrai portefeuille, rien ne quitte votre navigateur.
-2. *What does "locked in escrow" mean?* The reward is held by the bounty's smart contract (a program on the blockchain), not by the poster. It can only go to an approved contributor, or back to the poster if the bounty is cancelled. / *Que veut dire « bloqué en séquestre » ?* La récompense est détenue par le contrat intelligent de la prime (un programme sur la blockchain), pas par son auteur. Elle ne peut aller qu'à un contributeur approuvé, ou revenir à l'auteur si la prime est annulée.
-3. *Who decides whether my work is accepted?* Either the poster, or a named group of validators who vote; the bounty says which before you start. Validator bounties pay out automatically once the quorum approves. / *Qui décide si mon travail est accepté ?* Soit l'auteur de la prime, soit un groupe de validateurs nommés qui votent ; la prime l'indique avant que vous commenciez. Les primes à validateurs paient automatiquement dès que le quorum approuve.
-4. *What if my submission is rejected?* You get a written reason. If the deadline hasn't passed, you can fix it and submit again. / *Et si ma soumission est refusée ?* Vous recevez une raison écrite. Si l'échéance n'est pas passée, vous pouvez corriger et soumettre à nouveau.
-5. *Can a poster take the reward back?* Only by cancelling while no submission is waiting for a decision, and the cancellation is public. Once work is under review, the money stays put. / *L'auteur peut-il reprendre la récompense ?* Seulement en annulant la prime quand aucune soumission n'attend de décision, et l'annulation est publique. Dès qu'un travail est en évaluation, l'argent reste en place.
-6. *How is reputation calculated?* Only approved work counts: 10, 25, 50 or 100 points depending on difficulty. It can't be bought or transferred. / *Comment la réputation est-elle calculée ?* Seul le travail approuvé compte : 10, 25, 50 ou 100 points selon la difficulté. Elle ne s'achète pas et ne se transfère pas.
-7. *Does TaskFlow take a cut?* No. The contributor receives the full reward; on a real network the only cost is the transaction fee (gas). / *TaskFlow prend-il une commission ?* Non. Le contributeur reçoit toute la récompense ; sur un vrai réseau, le seul coût est le frais de transaction (gas).
+1. *Is this real money?* No. It's a testnet demo: nothing leaves your browser. / *Est-ce de l'argent réel ?* Non. C'est une démo sur testnet : rien ne quitte votre navigateur.
+2. *Who decides whether my work is accepted?* The poster, or a named group of validators. The bounty says which. / *Qui décide si mon travail est accepté ?* L'auteur, ou un groupe de validateurs nommés. La prime l'indique.
+3. *What if my submission is rejected?* You get a written reason and can resubmit before the deadline. / *Et si ma soumission est refusée ?* Vous recevez une raison écrite et pouvez soumettre à nouveau avant l'échéance.
+4. *Can a poster take the reward back?* Only by cancelling while no submission awaits a decision, in public. / *L'auteur peut-il reprendre la récompense ?* Seulement en annulant, en public, quand aucune soumission n'attend de décision.
+5. *Does TaskFlow take a cut?* No. Contributors get the full reward; the only cost is gas. / *TaskFlow prend-il une commission ?* Non. Le contributeur reçoit toute la récompense ; seul le gas coûte.
 
 ### App: key strings
 
 | Slot | English | Français |
 |-|-|-|
-| Connect gate | Connect a demo wallet to submit, post or vote. Nothing is signed for real. | Connectez un portefeuille de démo pour soumettre, publier ou voter. Rien n'est signé pour de vrai. |
-| Summary | Open bounties · Locked in escrow · Paid to contributors · Your reputation | Primes ouvertes · Bloqué en séquestre · Versé aux contributeurs · Votre réputation |
-| Board empty (filters) | No bounty matches these filters. Clear them to see the whole board. | Aucune prime ne correspond à ces filtres. Effacez-les pour voir tout le tableau. |
-| Board empty (none) | The board is empty. Post the first bounty, or reset the demo to bring back the examples. | Le tableau est vide. Publiez la première prime, ou réinitialisez la démo pour retrouver les exemples. |
+| Connect card | Connect a demo wallet to submit, post or vote | Connectez un portefeuille de démo pour soumettre, publier ou voter |
+| Summary | Open bounties · Locked in escrow · Your reputation | Primes ouvertes · Bloqué en séquestre · Votre réputation |
+| Board empty (filters) | No bounty matches these filters. + *Clear filters* | Aucune prime ne correspond à ces filtres. + *Effacer les filtres* |
+| Board empty (none) | The board is empty. + *Post a bounty* | Le tableau est vide. + *Publier une prime* |
 | Wallet prompt | Confirm in your wallet · Estimated network fee · Confirm · Reject | Confirmez dans votre portefeuille · Frais de réseau estimés · Confirmer · Refuser |
-| Disclaimer | Testnet demo · not financial advice · no real funds | Démo sur testnet · ceci n'est pas un conseil financier · aucun fonds réel |
+| Disclaimer (wallet prompt only) | Testnet demo · not financial advice · no real funds | Démo sur testnet · ceci n'est pas un conseil financier · aucun fonds réel |
 | Pending | Waiting for the network… | En attente du réseau… |
-| Locked | {amount} is locked in escrow | {amount} est bloqué en séquestre |
-| Paid | Paid {amount} to {name} | {amount} versé à {name} |
-| Failed payout | The payout failed. The reward is still safely in escrow; nobody was paid. | Le paiement a échoué. La récompense est toujours en séquestre ; personne n'a été payé. |
-| Rejected in wallet | You rejected the request in your wallet. Nothing was sent. | Vous avez refusé la demande dans votre portefeuille. Rien n'a été envoyé. |
-| Visibility lock | Only ambassadors can submit to this bounty. Everyone can read it. | Seuls les ambassadeurs peuvent soumettre à cette prime. Tout le monde peut la lire. |
+| Escrow info (popover) | Only an approval can pay it out. Only a cancellation can refund it. | Seule une approbation peut le verser. Seule une annulation peut le rembourser. |
+| Rejected in wallet | You rejected it in your wallet. Nothing was sent. | Refusée dans votre portefeuille. Rien n'a été envoyé. |
+| Visibility lock | Only ambassadors can submit. | Seuls les ambassadeurs peuvent soumettre. |
 | Deadline passed | Submissions closed on {date}. | Les soumissions ont fermé le {date}. |
-| No submissions | No submissions yet. Be the first: the reward is already locked. | Aucune soumission pour l'instant. Soyez le premier : la récompense est déjà bloquée. |
-| Nothing waiting | Nothing is waiting on you. Browse the board for something to work on. | Rien ne vous attend. Parcourez le tableau pour trouver une tâche. |
-| Unknown bounty | We couldn't find this bounty. It may have disappeared when the demo was reset. | Cette prime est introuvable. Elle a peut-être disparu lors de la réinitialisation de la démo. |
-| Storage error | Your browser blocked local storage, so the demo will forget changes when you leave. | Votre navigateur bloque le stockage local : la démo oubliera vos changements à la fermeture. |
+| No submissions | No submissions yet. | Aucune soumission pour l'instant. |
+| Nothing waiting | Nothing is waiting on you. + *Board* | Rien ne vous attend. + *Tableau* |
+| Unknown bounty | This bounty doesn't exist. The demo may have been reset. + *Back to the board* | Cette prime n'existe pas. La démo a peut-être été réinitialisée. + *Retour au tableau* |
+| Storage error | Your browser blocks storage: changes won't be kept. | Votre navigateur bloque le stockage : rien ne sera gardé. |
 
 The complete list (form validation, demo controls, how-it-works, credits, 404 and error copy) is in the dictionaries.
 
@@ -178,7 +169,7 @@ The complete list (form validation, demo controls, how-it-works, credits, 404 an
 
 Colour, type, logo, header and footer are fixed by the guidelines: cream / espresso tokens derived from `#f88d10` with `--surface-tint: 1` (§3 token block pasted over `theme.json`), Nunito Sans 400/600/700/800, pill actions, 1rem cards, borders not shadows, flat orange only.
 
-- **Layout and rhythm.** Home: hero (copy left, ticket right on desktop; stacked on mobile) → outcomes (three columns, outline icons top-left) → four-step rail (one horizontal line with four nodes on desktop, vertical on mobile) → "open right now" (three real bounty cards) → photo cards → FAQ (single column, 68ch) → closing band. The branded section divider appears twice. The app is a working tool: a dense board list (not a grid of fluffy cards) with a right rail on desktop for escrow and activity; single column on mobile with a sticky action bar on the bounty page.
+- **Layout and rhythm.** Home: hero (copy left, ticket right on desktop; stacked on mobile) → four-step rail (one horizontal line with four nodes on desktop, vertical on mobile) → "open right now" (three real bounty cards) → photo cards → FAQ (single column, 68ch) → closing band. The branded section divider appears once. The app is a working tool: a dense board list (not a grid of fluffy cards) with a right rail on desktop for escrow and activity; single column on mobile with a sticky action bar on the bounty page.
 - **The bounty card as a ticket.** Bounties read as tickets: reward on the right edge with a small lock icon and a perforated divider (a dashed vertical border) separating task from reward. This single motif ties the hero, board, preview and home cards together.
 - **Hero visual.** The live bounty ticket (see §3).
 - **Mesh butterfly.** Once, on the home hero, large and cropped off the right edge at low opacity behind the ticket; flat orange lines. Nowhere else.
@@ -231,6 +222,7 @@ Decisions taken unattended while building, recorded here instead of asked:
 - **Ticket stub label.** The stub says "Locked" / « Bloqué » (not "Locked in escrow") so it fits on one line at 360 px; the escrow panel on the bounty page spells it out.
 - **Home "Open right now".** The three cards are rendered at build time from the same seed as the demo, without deadlines (a relative deadline would be stale in a static page).
 - **Language switch.** Seeded content is re-translated when the visitor switches language, keeping every change they made; text they typed stays as typed.
-- **Toasts.** Top-right under the header on desktop and full width under the header on phones. They sit over the app strip, never over the escrow panel, the tally or the submissions they report on (checked in the screenshots).
+- **Toasts.** One message, once: the only toasts left are "You were paid {amount}. +{points} reputation." (the reputation is new information) and "Demo reset." Every other result is shown by the card, the tally, the escrow panel or the page the flow lands on. Toasts sit top-right under the header on desktop and full width under the header on phones.
+- **Context on demand.** `src/components/ui/info-tip.tsx` (a Radix popover behind an info icon, works on touch) holds the escrow "why" on the bounty page and the points table on the leaderboard; the contract interface on `/how-it-works` is behind a disclosure.
 - **Dependencies beyond the stack.** `next-themes` (theme toggle without a flash), `sonner` (toasts), `react-jazzicon` (required by the registry `wallet`), `cn` (the registry's class merger); `playwright` as a dev dependency for `pnpm screenshots`. No recharts: the only chart-like elements are the tally and leaderboard bars, drawn in code.
 - **Screenshots.** `docs/screenshots/`: every page and flow at 390 and 1440 px, light and dark, in English; the home page, the board and the review-and-payout flow (flow 4) in French, at both widths.

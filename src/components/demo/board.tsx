@@ -1,6 +1,7 @@
 "use client"
 
 import { SearchIcon, XIcon } from "lucide-react"
+import Link from "next/link"
 import { useMemo, useState } from "react"
 
 import { Ticket } from "@/components/bounty/ticket"
@@ -22,6 +23,7 @@ import { ConnectCard } from "./app-frame"
 
 type StatusFilter = "open" | "closed" | "done" | "all"
 const STATUS_FILTERS: StatusFilter[] = ["open", "closed", "done", "all"]
+const PAGE = 4
 
 export function Board() {
   const demo = useDemo()
@@ -31,6 +33,8 @@ export function Board() {
   const [status, setStatus] = useState<StatusFilter>("open")
   const [category, setCategory] = useState<Category | "all">("all")
   const [mine, setMine] = useState(false)
+  // Long lists are paged: the first few, then "Show more".
+  const [showAll, setShowAll] = useState(false)
   const [now] = useState(() => Date.now())
 
   const list = useMemo(() => {
@@ -74,36 +78,27 @@ export function Board() {
 
   return (
     <div className="flex flex-col gap-8">
-      <header className="max-w-3xl">
-        <h1 className="text-3xl font-extrabold tracking-display sm:text-4xl">{b.title}</h1>
-        <p className="mt-3 text-muted-foreground">{b.intro}</p>
-      </header>
+      <h1 className="text-3xl font-extrabold tracking-display sm:text-4xl">{b.title}</h1>
 
       <section aria-label={app.summary.label}>
-        <dl className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <dl className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           <Stat label={app.summary.open} value={formatNumber(summary.open, locale)} />
-          <Stat label={app.summary.locked} value={formatUsdWhole(summary.lockedUsd, locale)} hint={app.summary.lockedHint} />
-          <Stat label={app.summary.paid} value={formatUsdWhole(summary.paidUsd, locale)} />
+          <Stat label={app.summary.locked} value={formatUsdWhole(summary.lockedUsd, locale)} title={app.summary.lockedHint} />
           <Stat
             label={app.summary.reputation}
             value={connected && standing ? t(labels.points, { n: formatNumber(standing.reputation, locale) }) : app.summary.notConnected}
             hint={connected ? t(app.summary.rank, { rank }) : undefined}
             muted={!connected}
+            className="col-span-2 sm:col-span-1"
           />
         </dl>
       </section>
 
       {!connected ? <ConnectCard /> : null}
 
-      <section aria-labelledby="board-list" className="flex flex-col gap-4">
-        <h2 id="board-list" className="sr-only">
-          {b.title}
-        </h2>
+      <section aria-label={b.title} className="flex flex-col gap-4">
         <div className="flex flex-col gap-3 rounded-2xl border bg-card p-3 sm:p-4">
           <div className="relative">
-            <Label htmlFor="board-search" className="sr-only">
-              {b.search}
-            </Label>
             <SearchIcon className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
             <Input
               id="board-search"
@@ -111,6 +106,7 @@ export function Board() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={b.searchPlaceholder}
+              aria-label={b.search}
               className="h-11 rounded-full pl-10"
             />
           </div>
@@ -170,20 +166,30 @@ export function Board() {
 
         {list.length ? (
           <ul className="flex flex-col gap-3">
-            {list.map((x) => (
+            {(showAll ? list : list.slice(0, PAGE)).map((x) => (
               <li key={x.id}>
                 <Ticket {...ticketProps(x, demo, labels, app.ticket, locale, now)} href={href(locale, `/app/bounty/${x.id}`)} />
               </li>
             ))}
           </ul>
-        ) : (
+        ) : null}
+        {list.length > PAGE && !showAll ? (
+          <Button variant="outline" className="self-start" onClick={() => setShowAll(true)}>
+            {b.more}
+          </Button>
+        ) : null}
+        {list.length ? null : (
           <div className="flex flex-col items-start gap-3 rounded-2xl border border-dashed p-6">
             <p className="text-muted-foreground">{demo.bounties.length ? b.emptyFiltered : b.emptyAll}</p>
             {filtered ? (
               <Button variant="outline" size="sm" onClick={clear}>
                 {b.clear}
               </Button>
-            ) : null}
+            ) : (
+              <Button asChild variant="outline" size="sm">
+                <Link href={href(locale, "/app/new")}>{app.nav.post}</Link>
+              </Button>
+            )}
           </div>
         )}
       </section>
@@ -191,9 +197,23 @@ export function Board() {
   )
 }
 
-function Stat({ label, value, hint, muted }: { label: string; value: string; hint?: string; muted?: boolean }) {
+function Stat({
+  label,
+  value,
+  hint,
+  title,
+  muted,
+  className,
+}: {
+  label: string
+  value: string
+  hint?: string
+  title?: string
+  muted?: boolean
+  className?: string
+}) {
   return (
-    <div className="flex flex-col gap-1 rounded-2xl border bg-card p-4">
+    <div title={title} className={cn("flex flex-col gap-1 rounded-2xl border bg-card p-4", className)}>
       <dt className="text-xs font-semibold text-muted-foreground">{label}</dt>
       <dd className={cn("text-xl font-extrabold tabular-nums sm:text-2xl", muted && "text-base text-muted-foreground sm:text-base")}>{value}</dd>
       {hint ? <dd className="text-xs text-muted-foreground">{hint}</dd> : null}

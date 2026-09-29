@@ -14,7 +14,7 @@ This repository is the **demo site**: a marketing page plus a working, fully sim
 4. **Review submissions** on your own bounty: approve and pay, or reject with a reason; cancel and refund when nothing is waiting.
 5. **Vote as a validator** on a 2-of-3 bounty: when the quorum approves, the payout runs in the same transaction.
 
-Every transaction goes through a wallet prompt, a pending state with a hash, then confirmation or failure. **Demo controls** (in the app strip) slow the network, make the next transaction fail, give you the ambassador role, or **reset the demo**.
+Every transaction goes through a wallet prompt, a pending state with a hash, then confirmation or failure. **Demo controls** (the "Sepolia testnet" pill in the app bar) slow the network, make the next transaction fail, give you the ambassador role, or **reset the demo**.
 
 ## Run it locally
 

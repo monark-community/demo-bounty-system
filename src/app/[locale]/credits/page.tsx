@@ -24,7 +24,6 @@ export default async function CreditsPage({ params }: PageProps<"/[locale]/credi
   return (
     <div className="mx-auto w-full max-w-4xl px-4 py-12 sm:px-6 lg:py-16">
       <h1 className="text-4xl font-extrabold tracking-display sm:text-5xl">{c.title}</h1>
-      <p className="mt-4 max-w-[68ch] text-lg text-muted-foreground">{c.intro}</p>
 
       <section className="mt-12" aria-labelledby="photos-title">
         <h2 id="photos-title" className="text-2xl font-bold">
@@ -53,7 +52,6 @@ export default async function CreditsPage({ params }: PageProps<"/[locale]/credi
                     {p.profile.replace("https://", "")}
                   </a>
                 </p>
-                <p className="mt-1 text-xs text-muted-foreground">{c.usedOn}</p>
               </div>
             </li>
           ))}

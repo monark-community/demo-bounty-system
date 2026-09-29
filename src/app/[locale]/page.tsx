@@ -1,4 +1,4 @@
-import { ArrowRightIcon, BadgeCheckIcon, GavelIcon, LockIcon, ScrollTextIcon, SendIcon, WalletIcon, ZapIcon } from "lucide-react"
+import { ArrowRightIcon, GavelIcon, LockIcon, SendIcon, WalletIcon } from "lucide-react"
 import type { Metadata } from "next"
 import Image from "next/image"
 import Link from "next/link"
@@ -24,7 +24,6 @@ export async function generateMetadata({ params }: PageProps<"/[locale]">): Prom
   return pageMetadata(locale, "/", null, getDictionary(locale).meta.description)
 }
 
-const OUTCOME_ICONS = [LockIcon, ZapIcon, ScrollTextIcon]
 const STEP_ICONS = [LockIcon, SendIcon, GavelIcon, WalletIcon]
 const PHOTOS = [maintainerImg, challengeImg, ambassadorsImg]
 const FEATURED = ["translate-governance-guide", "timesheet-timezone", "ambassador-walkthrough"]
@@ -54,8 +53,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
         />
         <div className="relative mx-auto grid max-w-6xl gap-12 px-4 pt-12 pb-16 sm:px-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-center lg:gap-14 lg:pt-20 lg:pb-24">
           <div>
-            <p className="eyebrow text-primary-ink">{h.eyebrow}</p>
-            <h1 id="hero-title" className="mt-4 text-[2.25rem] leading-[1.06] font-extrabold tracking-display sm:text-5xl lg:text-[3.75rem]">
+            <h1 id="hero-title" className="text-[2.25rem] leading-[1.06] font-extrabold tracking-display sm:text-5xl lg:text-[3.75rem]">
               {h.title}
             </h1>
             <p className="mt-5 max-w-[34rem] text-lg text-muted-foreground sm:text-xl">{h.sub}</p>
@@ -70,46 +68,18 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
                 <Link href={href(locale, "/how-it-works")}>{h.ctaSecondary}</Link>
               </Button>
             </div>
-            <p className="mt-6 text-xs text-muted-foreground">{dict.common.disclaimer}</p>
           </div>
           <HeroTicket copy={h.ticket} />
         </div>
-      </section>
-
-      <SectionDivider />
-
-      {/* Outcomes */}
-      <section aria-labelledby="outcomes-title" className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6 lg:py-20">
-        <div className="max-w-2xl">
-          <h2 id="outcomes-title" className="text-3xl font-bold tracking-display sm:text-[2rem]">
-            {h.outcomes.title}
-          </h2>
-          <p className="mt-4 text-muted-foreground">{h.outcomes.intro}</p>
-        </div>
-        <ul className="mt-10 grid gap-8 md:grid-cols-3 md:gap-10">
-          {h.outcomes.items.map((item, i) => {
-            const Icon = OUTCOME_ICONS[i] ?? LockIcon
-            return (
-              <li key={item.title}>
-                <Icon className="size-7 text-primary" strokeWidth={1.75} aria-hidden="true" />
-                <h3 className="mt-4 text-xl font-bold">{item.title}</h3>
-                <p className="mt-2 text-muted-foreground">{item.body}</p>
-              </li>
-            )
-          })}
-        </ul>
       </section>
 
       {/* Four steps */}
       <section aria-labelledby="steps-title" className="border-y bg-secondary/50">
         <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:py-20">
           <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-            <div>
-              <p className="eyebrow text-primary-ink">{h.steps.eyebrow}</p>
-              <h2 id="steps-title" className="mt-3 text-3xl font-bold tracking-display sm:text-[2rem]">
-                {h.steps.title}
-              </h2>
-            </div>
+            <h2 id="steps-title" className="text-3xl font-bold tracking-display sm:text-[2rem]">
+              {h.steps.title}
+            </h2>
             <Link
               href={href(locale, "/how-it-works")}
               className="inline-flex min-h-11 items-center gap-1.5 font-semibold text-primary-ink underline underline-offset-4 md:min-h-0"
@@ -142,15 +112,9 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
 
       {/* Open right now */}
       <section aria-labelledby="open-title" className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6 lg:py-20">
-        <div className="grid gap-4 lg:grid-cols-[1fr_1fr] lg:items-end">
-          <div>
-            <p className="eyebrow text-primary-ink">{h.openNow.eyebrow}</p>
-            <h2 id="open-title" className="mt-3 text-3xl font-bold tracking-display sm:text-[2rem]">
-              {h.openNow.title}
-            </h2>
-          </div>
-          <p className="text-muted-foreground">{h.openNow.body}</p>
-        </div>
+        <h2 id="open-title" className="text-3xl font-bold tracking-display sm:text-[2rem]">
+          {h.openNow.title}
+        </h2>
         <ul className="mt-10 flex flex-col gap-3">
           {featured.map((b) => {
             const props = ticketProps(b, seed, dict.labels, dict.app.ticket, locale)
@@ -173,8 +137,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
 
       {/* Who */}
       <section aria-labelledby="who-title" className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6 lg:py-20">
-        <p className="eyebrow text-primary-ink">{h.who.eyebrow}</p>
-        <h2 id="who-title" className="mt-3 max-w-2xl text-3xl font-bold tracking-display sm:text-[2rem]">
+        <h2 id="who-title" className="max-w-2xl text-3xl font-bold tracking-display sm:text-[2rem]">
           {h.who.title}
         </h2>
         <ul className="mt-10 grid gap-6 md:grid-cols-3">
@@ -193,10 +156,6 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
               <div className="flex flex-1 flex-col gap-2 p-5">
                 <h3 className="text-xl font-bold">{item.title}</h3>
                 <p className="text-muted-foreground">{item.body}</p>
-                <p className="mt-auto inline-flex items-center gap-1.5 pt-2 text-sm font-semibold">
-                  <BadgeCheckIcon className="size-4 text-primary" aria-hidden="true" />
-                  {item.example}
-                </p>
               </div>
             </li>
           ))}
@@ -231,20 +190,12 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
       {/* Closing */}
       <section aria-labelledby="closing-title" className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6 lg:py-20">
         <div className="flex flex-col gap-6 rounded-3xl border-2 border-primary bg-card p-6 sm:p-10 md:flex-row md:items-center md:justify-between">
-          <div className="max-w-xl">
-            <h2 id="closing-title" className="text-3xl font-bold tracking-display">
-              {h.closing.title}
-            </h2>
-            <p className="mt-3 text-muted-foreground">{h.closing.body}</p>
-          </div>
-          <div className="flex shrink-0 flex-col gap-3 sm:flex-row">
-            <Button asChild size="lg">
-              <Link href={href(locale, "/app/new")}>{h.closing.cta}</Link>
-            </Button>
-            <Button asChild size="lg" variant="outline">
-              <Link href={href(locale, "/app")}>{h.closing.secondary}</Link>
-            </Button>
-          </div>
+          <h2 id="closing-title" className="max-w-xl text-3xl font-bold tracking-display">
+            {h.closing.title}
+          </h2>
+          <Button asChild size="lg" className="shrink-0">
+            <Link href={href(locale, "/app/new")}>{h.closing.cta}</Link>
+          </Button>
         </div>
       </section>
     </>

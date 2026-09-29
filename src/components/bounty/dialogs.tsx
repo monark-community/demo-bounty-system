@@ -1,10 +1,8 @@
 "use client"
 
 import { useId, useState } from "react"
-import { toast } from "sonner"
 
 import { useAppCopy } from "@/components/demo/app-provider"
-import { Disclaimer } from "@/components/demo/disclaimer"
 import { TxFeedback } from "@/components/demo/tx-feedback"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -15,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { t } from "@/i18n/t"
 import { formatToken } from "@/lib/format"
 import { useTx } from "@/lib/demo/chain"
-import { cancelBounty, castVote, rejectSubmission, submitWork, type VoteOutcome } from "@/lib/demo/ops"
+import { cancelBounty, castVote, rejectSubmission, submitWork } from "@/lib/demo/ops"
 import { getDemo } from "@/lib/demo/store"
 import type { Bounty, Submission } from "@/lib/demo/types"
 
@@ -71,7 +69,7 @@ export function SubmitDialog({ bounty, open, onOpenChange }: { bounty: Bounty; o
       (hash) => submitWork(bounty.id, link.trim(), note.trim(), hash)
     )
     if (ok) {
-      toast.success(c.done)
+      // The submission appears on the bounty, "Waiting for review": no toast.
       onOpenChange(false)
       setLink("")
       setNote("")
@@ -92,7 +90,7 @@ export function SubmitDialog({ bounty, open, onOpenChange }: { bounty: Bounty; o
       <DialogContent closeLabel={app.close} className="max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="text-xl font-extrabold">{c.title}</DialogTitle>
-          <DialogDescription>{c.description}</DialogDescription>
+          <DialogDescription className="sr-only">{c.description}</DialogDescription>
         </DialogHeader>
         <form
           noValidate
@@ -115,11 +113,8 @@ export function SubmitDialog({ bounty, open, onOpenChange }: { bounty: Bounty; o
               onChange={(e) => setLink(e.target.value)}
               placeholder={c.linkPlaceholder}
               aria-invalid={!!errors.link}
-              aria-describedby={`${ids}-link-hint ${ids}-link-err`}
+              aria-describedby={`${ids}-link-err`}
             />
-            <p id={`${ids}-link-hint`} className="text-xs text-muted-foreground">
-              {c.linkHint}
-            </p>
             <FieldError id={`${ids}-link-err`} message={errors.link} />
           </div>
           <div className="flex flex-col gap-1.5">
@@ -201,7 +196,6 @@ export function RejectDialog({
     }
     setError(undefined)
     const reason = note.trim()
-    const result: { outcome: VoteOutcome | null } = { outcome: null }
     const ok = await tx.run(
       mode === "poster"
         ? {
@@ -222,11 +216,11 @@ export function RejectDialog({
           },
       (hash) => {
         if (mode === "poster") rejectSubmission(bounty.id, submission.id, reason, hash)
-        else if (demo) result.outcome = castVote(bounty.id, submission.id, demo.youId, false, reason, hash)
+        else if (demo) castVote(bounty.id, submission.id, demo.youId, false, reason, hash)
       }
     )
     if (ok) {
-      toast.success(mode === "poster" ? t(app.toasts.rejected, { name: who }) : result.outcome === "rejected" ? app.bounty.vote.rejectOutcome : app.toasts.voted)
+      // The card shows "Rejected" with the reason, or your vote in the tally: no toast.
       setNote("")
       tx.reset()
       onOpenChange(false)
@@ -300,7 +294,7 @@ export function CancelDialog({
   onOpenChange: (o: boolean) => void
   onDone: () => void
 }) {
-  const { app, disclaimer, locale, labels } = useAppCopy()
+  const { app, locale, labels } = useAppCopy()
   const c = app.bounty.cancel
   const tx = useTx()
   const amount = formatToken(bounty.reward, bounty.token, locale)
@@ -318,7 +312,7 @@ export function CancelDialog({
       (hash) => cancelBounty(bounty.id, hash)
     )
     if (ok) {
-      toast.success(t(app.toasts.cancelled, { amount }))
+      // The escrow panel shows the refund: no toast.
       tx.reset()
       onOpenChange(false)
       onDone()
@@ -339,7 +333,6 @@ export function CancelDialog({
           <DialogTitle className="text-xl font-extrabold">{c.title}</DialogTitle>
           <DialogDescription>{t(c.body, { amount })}</DialogDescription>
         </DialogHeader>
-        <Disclaimer text={disclaimer} />
         <TxFeedback state={tx.state} onRetry={() => void send()} />
         <DialogFooter className="flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={tx.busy}>

@@ -3,7 +3,6 @@
 import { BugIcon, FileTextIcon, LockIcon, ShieldIcon } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useId, useState, type ReactNode } from "react"
-import { toast } from "sonner"
 
 import { Ticket } from "@/components/bounty/ticket"
 import { Button } from "@/components/ui/button"
@@ -24,7 +23,6 @@ import { cn } from "@/lib/utils"
 
 import { useAppCopy } from "./app-provider"
 import { ConnectCard } from "./app-frame"
-import { Disclaimer } from "./disclaimer"
 import { TxFeedback } from "./tx-feedback"
 
 interface Draft {
@@ -61,7 +59,7 @@ function endOfDayIso(value: string): string | null {
 }
 
 export function Composer() {
-  const { app, labels, seed, locale, disclaimer } = useAppCopy()
+  const { app, labels, seed, locale } = useAppCopy()
   const c = app.composer
   const f = c.fields
   const demo = useDemo()
@@ -170,8 +168,8 @@ export function Composer() {
       }
     )
     if (ok && newId) {
+      // The bounty page opens on the lock animation and the escrow panel: no toast.
       markJustPosted(newId)
-      toast.success(t(app.toasts.posted, { amount: amountText }))
       router.push(href(locale, `/app/bounty/${newId}`))
     }
   }
@@ -185,10 +183,7 @@ export function Composer() {
 
   return (
     <div className="flex flex-col gap-8">
-      <header className="max-w-3xl">
-        <h1 className="text-3xl font-extrabold tracking-display sm:text-4xl">{c.title}</h1>
-        <p className="mt-3 text-muted-foreground">{c.intro}</p>
-      </header>
+      <h1 className="text-3xl font-extrabold tracking-display sm:text-4xl">{c.title}</h1>
 
       {!connected ? <ConnectCard /> : null}
 
@@ -311,7 +306,7 @@ export function Composer() {
                 </NativeSelect>
               </Field>
             </div>
-            <Field id={`${uid}-deadline`} label={f.deadline} hint={f.deadlineHint} error={shown.deadline}>
+            <Field id={`${uid}-deadline`} label={f.deadline} error={shown.deadline}>
               <Input
                 id={`${uid}-deadline`}
                 type="date"
@@ -321,7 +316,7 @@ export function Composer() {
                 onChange={(e) => set("deadline", e.target.value)}
                 className="w-full sm:w-56"
                 aria-invalid={!!shown.deadline}
-                aria-describedby={`${uid}-deadline-hint ${uid}-deadline-err`}
+                aria-describedby={`${uid}-deadline-err`}
               />
             </Field>
           </Section>
@@ -385,19 +380,14 @@ export function Composer() {
               <LockIcon aria-hidden="true" />
               {busy ? c.publishing : t(c.publish, { amount: amountText })}
             </Button>
-            <Disclaimer text={disclaimer} />
             <TxFeedback state={tx.state} pendingLabel={c.publishing} onRetry={() => void publish()} onDismiss={() => tx.reset()} />
-            {tx.state.phase === "failed" ? <p className="text-xs text-muted-foreground">{c.failedKeep}</p> : null}
           </div>
         </form>
 
         <aside aria-labelledby={`${uid}-preview`} className="flex flex-col gap-3 lg:sticky lg:top-24">
-          <div>
-            <h2 id={`${uid}-preview`} className="eyebrow text-muted-foreground">
-              {c.preview}
-            </h2>
-            <p className="mt-1 text-xs text-muted-foreground">{c.previewHint}</p>
-          </div>
+          <h2 id={`${uid}-preview`} className="eyebrow text-muted-foreground">
+            {c.preview}
+          </h2>
           <Ticket
             title={draft.title.trim() || c.previewTitle}
             org={seed.orgs.core}
