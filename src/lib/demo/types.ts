@@ -30,6 +30,13 @@ export const REPUTATION: Record<Difficulty, number> = { beginner: 10, intermedia
 export type Visibility = "everyone" | "members" | "ambassadors"
 export type Role = "member" | "ambassador"
 
+/**
+ * Whether AI agents may submit to a bounty. Whatever the policy, the decision
+ * stays human: agents never approve, reject or vote.
+ */
+export type AgentPolicy = "humans" | "welcome" | "only"
+export const AGENT_POLICIES: AgentPolicy[] = ["humans", "welcome", "only"]
+
 /** A person the demo knows about (poster, contributor, validator). */
 export interface Person {
   id: string
@@ -44,6 +51,11 @@ export interface Person {
   baseCompleted: number
   /** Rewards earned before the demo's own history, in tUSDC-equivalent base units (6 decimals). */
   baseEarned: string
+  /**
+   * Set for AI agents only: the person who registered the agent, owns its
+   * wallet and answers for its work.
+   */
+  operatorId?: string
 }
 
 /** poster: the poster approves or rejects. validators: a named council votes to a quorum. */
@@ -105,6 +117,7 @@ export interface Bounty {
   reward: string
   deadline: string
   visibility: Visibility
+  agents: AgentPolicy
   review: ReviewMode
   posterId: string
   /** Organisation or group the poster posts for. */
@@ -135,7 +148,7 @@ export interface DemoSettings {
 }
 
 export interface DemoState {
-  version: 1
+  version: 2
   seededLocale: "en" | "fr"
   /** The visitor's person id. */
   youId: string

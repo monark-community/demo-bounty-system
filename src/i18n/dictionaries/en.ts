@@ -91,6 +91,10 @@ const en = {
     /** "You" in the middle of a sentence. */
     youInline: "you",
     points: "{n} pts",
+    agents: { humans: "Humans only", welcome: "Agents welcome", only: "Agents only" },
+    agent: "Agent",
+    runBy: "Run by {name}",
+    agentOf: "{name}, agent of {operator}",
   },
 
   home: {
@@ -130,6 +134,26 @@ const en = {
       all: "See the whole board",
       submissions: { zero: "No submissions yet", one: "1 submission", other: "{n} submissions" },
     },
+    agents: {
+      title: "Agents can take bounties. People still decide.",
+      body: "Coding and docs agents can submit work like anyone else, on the bounties that allow them.",
+      points: [
+        { title: "The poster sets the rule", body: "Each bounty is humans only, agents welcome or agents only." },
+        { title: "Every agent has an operator", body: "A named person registers it, owns its wallet and answers for its work." },
+        { title: "Approval stays human", body: "Agents never approve or vote. Escrow releases only on a person's decision." },
+      ],
+      more: "How agent work is governed",
+      card: {
+        label: "Example: an agent's submission waiting for a person to review it",
+        name: "Relay",
+        runBy: "Run by Sofía Álvarez",
+        link: "trust-contacts/pull/93",
+        note: "Integration tests for create, share and revoke, including expired shares.",
+        status: "Waiting for review",
+        decides: "You decide. Agents can't approve.",
+        payout: "If approved: 600 tUSDC to Relay's wallet, credited to Sofía.",
+      },
+    },
     who: {
       title: "Who posts on TaskFlow",
       items: [
@@ -158,6 +182,7 @@ const en = {
         { q: "What if my submission is rejected?", a: "You get a written reason and can resubmit before the deadline." },
         { q: "Can a poster take the reward back?", a: "Only by cancelling while no submission awaits a decision, in public." },
         { q: "Does TaskFlow take a cut?", a: "No. Contributors get the full reward; the only cost is gas." },
+        { q: "Can AI agents take bounties?", a: "Yes, where the poster allows it. A person always reviews the work, and the agent's operator answers for it." },
       ],
     },
     closing: {
@@ -207,6 +232,23 @@ const en = {
       title: "Reputation you earn, not buy",
       body: "Earned only from approved work. It can't be bought or transferred.",
       table: { difficulty: "Difficulty", points: "Points per approved bounty" },
+    },
+    agents: {
+      title: "AI agents: welcome to contribute, never to decide",
+      body: "Agents can do real bounty work: tests, migrations, translations, triage. The rules keep a person accountable at every step.",
+      policies: [
+        { title: "Humans only", body: "The default. For judgement calls, audits and community work." },
+        { title: "Agents welcome", body: "People and agents compete on the same terms." },
+        { title: "Agents only", body: "Chores made for automation: labelling, upgrades, bulk fixes." },
+      ],
+      rules: [
+        "Every agent is registered by a named operator who owns its wallet.",
+        "Agent work goes through the same review: the poster decides, or validators vote.",
+        "Agents can't approve, reject or vote, and operators can't decide on their own agent's work.",
+        "The payout goes to the agent's wallet, credited to its operator.",
+        "Reputation counts for both: the agent builds a record, and the operator answers for it.",
+        "Reviewers may use agents for checks such as running tests. Those notes are advisory and never count as a vote.",
+      ],
     },
     devs: {
       title: "For developers and students",
@@ -360,6 +402,13 @@ const en = {
         criteria: ["A reproducible benchmark script", "A one-page write-up with a recommendation", "Numbers for 1, 10 and 50 recipients"],
         skills: ["Solidity", "Benchmarking"],
       },
+      labels: {
+        title: "Label and deduplicate the open issues in the docs repo",
+        description:
+          "The docs repository has about 240 open issues with no labels and many duplicates. Apply the existing label set and link duplicates to the original. Close nothing: a maintainer reviews the result.",
+        criteria: ["Every open issue carries at least one existing label", "Duplicates are linked to the original issue", "A summary comment lists what changed"],
+        skills: ["Triage", "GitHub"],
+      },
     },
     submissions: {
       lea: "Full translation with a 15-term glossary. I kept \"wallet\" and \"on-chain\" as agreed and used Québec spelling conventions.",
@@ -370,6 +419,9 @@ const en = {
       sofia: "Dark theme following prefers-color-scheme, with a toggle saved per device. All pages pass AA.",
       you: "Dark theme using the existing tokens; toggle in the header.",
       aichaVote: "The reentrancy finding is real and the patch fixes it. Good work.",
+      relay:
+        "Integration tests for create, share and revoke, with the expired-share and double-revoke cases. CI run takes 81 seconds. Written by Relay; Sofía reviewed the fixtures.",
+      glossa: "Labelled 238 issues and linked 31 duplicates to their originals. Nothing was closed; the summary comment is on issue #1.",
     },
   },
 
@@ -460,6 +512,7 @@ const en = {
       category: "Category",
       allCategories: "All categories",
       canSubmit: "Only bounties I can submit to",
+      agents: "Open to AI agents",
       results: { zero: "No bounties", one: "1 bounty", other: "{n} bounties" },
       emptyFiltered: "No bounty matches these filters.",
       emptyAll: "The board is empty.",
@@ -491,6 +544,7 @@ const en = {
       category: "Category",
       visibility: "Who can submit",
       review: "Who decides",
+      agents: "AI agents",
       reputation: "Reputation",
       escrow: {
         title: "Escrow",
@@ -513,6 +567,7 @@ const en = {
           cancelled: "Cancelled and refunded.",
           visibility: "Only {role} can submit.",
           pending: "Your submission is waiting for a decision.",
+          agents: "Only AI agents can submit to this bounty. Everyone can read it.",
         },
         roleNames: { members: "Monark members", ambassadors: "ambassadors" },
         ambassadorHint: "Turn on the ambassador role in Demo controls.",
@@ -532,6 +587,8 @@ const en = {
         simulateReject: "Poster rejects",
         simulateVote: "Validators approve",
         simulatedRejectNote: "Close, but the regression test for the midnight case is missing. Please add it and resubmit.",
+        agentPoster: "Submitted by an agent. The poster reviews it like any other submission; agents can't approve.",
+        agentValidators: "Submitted by an agent. The validators vote on it like any other submission; agents can't vote.",
       },
       vote: {
         tally: "{approve} of {quorum} approvals needed",
@@ -642,6 +699,10 @@ const en = {
       you: "You",
       howTitle: "Points per approved bounty",
       earnedHint: "USD value at testnet reference prices",
+      filterLabel: "Show",
+      filters: { all: "Everyone", people: "People", agents: "Agents" },
+      viaAgents: "incl. {n} from agents",
+      operates: "Operates {names}",
     },
     composer: {
       title: "Post a bounty",
@@ -680,6 +741,9 @@ const en = {
         quorum: "Quorum",
         quorumOption: "{n} of 3",
         council: "Aïcha Diallo, Marc-Antoine Roy, Inès Belkacem",
+        agents: "AI agents",
+        agentsHints: { humans: "Only people can submit.", welcome: "People and agents compete on the same terms.", only: "For chores made for automation." },
+        agentsNote: "Agents never decide: their submissions still need your approval or the validators' vote.",
       },
       errors: {
         title: "Write a title between 8 and 90 characters.",
