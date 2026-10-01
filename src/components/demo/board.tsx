@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils"
 
 import { useAppCopy } from "./app-provider"
 import { ConnectCard } from "./app-frame"
+import { NativeSelect } from "./native-select"
 
 type StatusFilter = "open" | "closed" | "done" | "all"
 const STATUS_FILTERS: StatusFilter[] = ["open", "closed", "done", "all"]
@@ -33,6 +34,7 @@ export function Board() {
   const [status, setStatus] = useState<StatusFilter>("open")
   const [category, setCategory] = useState<Category | "all">("all")
   const [mine, setMine] = useState(false)
+  const [agentsOk, setAgentsOk] = useState(false)
   // Long lists are paged: the first few, then "Show more".
   const [showAll, setShowAll] = useState(false)
   const [now] = useState(() => Date.now())
@@ -48,6 +50,7 @@ export function Board() {
         if (status === "done" && st !== "paid" && st !== "cancelled") return false
         if (category !== "all" && x.category !== category) return false
         if (mine && submitBlock(demo, x, now) !== null) return false
+        if (agentsOk && x.agents === "humans") return false
         if (q) {
           const hay = [x.title, x.org, x.description, ...x.skills, labels.category[x.category]].join(" ").toLowerCase()
           if (!hay.includes(q)) return false
@@ -62,18 +65,19 @@ export function Board() {
         if (rank(sa) !== rank(sc)) return rank(sa) - rank(sc)
         return rank(sa) === 0 ? a.deadline.localeCompare(c.deadline) : c.createdAt.localeCompare(a.createdAt)
       })
-  }, [demo, query, status, category, mine, labels, now])
+  }, [demo, query, status, category, mine, agentsOk, labels, now])
 
   if (!demo) return null
   const connected = demo.wallet.status === "connected"
   const summary = boardSummary(demo)
   const { rank, standing } = rankOf(demo, demo.youId)
-  const filtered = query !== "" || status !== "open" || category !== "all" || mine
+  const filtered = query !== "" || status !== "open" || category !== "all" || mine || agentsOk
   const clear = () => {
     setQuery("")
     setStatus("open")
     setCategory("all")
     setMine(false)
+    setAgentsOk(false)
   }
 
   return (
@@ -126,11 +130,11 @@ export function Board() {
                 <Label htmlFor="board-category" className="text-sm font-semibold">
                   {b.category}
                 </Label>
-                <select
+                <NativeSelect
                   id="board-category"
                   value={category}
                   onChange={(e) => setCategory(e.target.value as Category | "all")}
-                  className="h-9 rounded-full border border-input bg-background px-3 text-sm font-semibold"
+                  className="h-9"
                 >
                   <option value="all">{b.allCategories}</option>
                   {CATEGORIES.map((c) => (
@@ -138,7 +142,13 @@ export function Board() {
                       {labels.category[c]}
                     </option>
                   ))}
-                </select>
+                </NativeSelect>
+              </div>
+              <div className="flex min-h-9 items-center gap-2">
+                <Checkbox id="board-agents" checked={agentsOk} onCheckedChange={(v) => setAgentsOk(v === true)} />
+                <Label htmlFor="board-agents" className="text-sm font-semibold">
+                  {b.agents}
+                </Label>
               </div>
               {connected ? (
                 <div className="flex min-h-9 items-center gap-2">
@@ -221,7 +231,7 @@ function Stat({
   )
 }
 
-function Chip({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+export function Chip({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
     <button
       type="button"

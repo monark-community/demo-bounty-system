@@ -35,8 +35,9 @@ function load(): DemoState | null {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY)
     if (!raw) return null
+    // Older saves (version 1, before agents) are dropped and the demo reseeds.
     const parsed = JSON.parse(raw) as DemoState
-    if (parsed?.version !== 1 || !Array.isArray(parsed.bounties) || !Array.isArray(parsed.people)) return null
+    if (parsed?.version !== 2 || !Array.isArray(parsed.bounties) || !Array.isArray(parsed.people)) return null
     // A reload never resumes a half-finished connection.
     if (parsed.wallet.status === "connecting") parsed.wallet.status = "disconnected"
     return parsed

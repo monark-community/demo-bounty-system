@@ -17,16 +17,17 @@ import { formatDate, formatDateTime, formatRelative, formatToken, formatUnits, s
 import { useTx } from "@/lib/demo/chain"
 import { takeJustPosted } from "@/lib/demo/flash"
 import { approveSubmission, castVote, rejectSubmission } from "@/lib/demo/ops"
-import { activeSubmissions, displayStatus, personById, submitBlock } from "@/lib/demo/select"
+import { activeSubmissions, displayStatus, isAgent, personById, submitBlock } from "@/lib/demo/select"
 import { useDemo } from "@/lib/demo/store"
 import { TOKENS } from "@/lib/demo/tokens"
 import { REPUTATION, type Bounty, type BountyEvent, type DemoState, type Submission } from "@/lib/demo/types"
 import { cn } from "@/lib/utils"
 
+import { AgentBadge } from "./agent-badge"
 import { CancelDialog, RejectDialog, SubmitDialog } from "./dialogs"
 import { EscrowRail } from "./escrow-rail"
 import { StatusPill } from "./ticket"
-import { nameOf } from "./ticket-props"
+import { accountableName, nameOf } from "./ticket-props"
 import { VoteTally, type TallyNode } from "./vote-tally"
 
 type Flash = "locked" | "released" | "refunded" | null
@@ -122,7 +123,16 @@ export function BountyView({ id }: { id: string }) {
           amount={amount}
           token={bounty.token}
           poster={{ name: posterName, address: poster?.address, caption: bounty.org }}
-          winner={winner ? { name: nameOf(demo, winner.id, labels.you), address: winner.address, caption: winner.handle } : undefined}
+          winner={
+            winner
+              ? {
+                  name: nameOf(demo, winner.id, labels.you),
+                  address: winner.address,
+                  // An agent's payout is credited to the person who answers for it.
+                  caption: winner.operatorId ? t(labels.runBy, { name: nameOf(demo, winner.operatorId, labels.you) }) : winner.handle,
+                }
+              : undefined
+          }
           lockedLabel={c.escrow.lockedShort}
           releasedLabel={labels.bountyStatus.paid}
           refundedLabel={labels.bountyStatus.cancelled}
@@ -211,6 +221,7 @@ export function BountyView({ id }: { id: string }) {
               <Row label={c.difficulty} value={labels.difficulty[bounty.difficulty]} />
               <Row label={c.reputation} value={`+${REPUTATION[bounty.difficulty]}`} />
               <Row label={c.visibility} value={labels.visibility[bounty.visibility]} />
+              <Row label={c.agents} value={labels.agents[bounty.agents]} />
               <Row label={c.review} value={reviewLabel} />
               {bounty.skills.length ? <Row label={c.skills} value={bounty.skills.join(", ")} /> : null}
             </dl>
@@ -314,6 +325,8 @@ function SubmissionCard({ demo, bounty, submission }: { demo: DemoState; bounty:
   const v = app.bounty.vote
   const person = personById(demo, submission.personId)
   const name = nameOf(demo, submission.personId, labels.you)
+  const agent = isAgent(person)
+  const operatorName = person?.operatorId ? nameOf(demo, person.operatorId, labels.you) : ""
   const tx = useTx()
   const sim = useTx()
   const [rejectMode, setRejectMode] = useState<"poster" | "vote" | null>(null)
@@ -343,7 +356,7 @@ function SubmissionCard({ demo, bounty, submission }: { demo: DemoState; bounty:
         title: t(app.summaries.release, { amount, name }),
         rows: [
           { label: app.summaries.releaseRows.bounty, value: bounty.title },
-          { label: app.summaries.releaseRows.to, value: name },
+          { label: app.summaries.releaseRows.to, value: accountableName(demo, submission.personId, labels.you, labels) },
         ],
         movesValue: true,
       },
@@ -442,8 +455,10 @@ function SubmissionCard({ demo, bounty, submission }: { demo: DemoState; bounty:
             <p className="truncate font-bold">
               {isYours ? c.yourSubmission : name}
               {!isYours && person ? <span className="ml-1.5 text-xs font-semibold text-muted-foreground">{person.handle}</span> : null}
+              {agent ? <AgentBadge label={labels.agent} className="ml-1.5 align-[1px]" /> : null}
             </p>
             <p className="text-xs text-muted-foreground">
+              {agent ? <span className="font-semibold text-foreground">{t(labels.runBy, { name: operatorName })} · </span> : null}
               <time dateTime={submission.at} title={submission.hash}>
                 {t(c.submittedAt, { date: formatRelative(submission.at, locale) })}
               </time>
@@ -479,6 +494,14 @@ function SubmissionCard({ demo, bounty, submission }: { demo: DemoState; bounty:
           {submission.note}
         </p>
       </div>
+
+      {/* Agents contribute; a person (or the validators) still decides. */}
+      {agent && inReview ? (
+        <p className="flex items-start gap-2 rounded-xl bg-muted/50 p-3 text-xs">
+          <ShieldCheckIcon className="mt-px size-4 shrink-0 text-primary" aria-hidden="true" />
+          {posterMode ? c.agentPoster : c.agentValidators}
+        </p>
+      ) : null}
 
       {submission.status === "rejected" && submission.decisionNote ? (
         <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-3 text-sm">

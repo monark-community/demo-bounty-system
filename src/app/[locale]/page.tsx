@@ -1,17 +1,30 @@
-import { ArrowRightIcon, GavelIcon, LockIcon, SendIcon, WalletIcon } from "lucide-react"
+import {
+  ArrowRightIcon,
+  GavelIcon,
+  GitPullRequestIcon,
+  LockIcon,
+  SendIcon,
+  ShieldCheckIcon,
+  SlidersHorizontalIcon,
+  UserCheckIcon,
+  WalletIcon,
+} from "lucide-react"
 import type { Metadata } from "next"
 import Image from "next/image"
 import Link from "next/link"
 import { notFound } from "next/navigation"
 
+import { AgentBadge } from "@/components/bounty/agent-badge"
 import { Ticket } from "@/components/bounty/ticket"
 import { ticketProps } from "@/components/bounty/ticket-props"
 import { HeroTicket } from "@/components/home/hero-ticket"
 import { SectionDivider } from "@/components/site/section-divider"
 import { Button } from "@/components/ui/button"
+import { WalletAvatar } from "@/components/ui/wallet"
 import { href, isLocale } from "@/i18n/config"
 import { getDictionary } from "@/i18n"
 import { pageMetadata } from "@/lib/metadata"
+import { seededAddress } from "@/lib/demo/ids"
 import { createSeed } from "@/lib/demo/seed"
 
 import ambassadorsImg from "../../../public/images/ambassadors.jpg"
@@ -25,6 +38,7 @@ export async function generateMetadata({ params }: PageProps<"/[locale]">): Prom
 }
 
 const STEP_ICONS = [LockIcon, SendIcon, GavelIcon, WalletIcon]
+const AGENT_ICONS = [SlidersHorizontalIcon, UserCheckIcon, ShieldCheckIcon]
 const PHOTOS = [maintainerImg, challengeImg, ambassadorsImg]
 const FEATURED = ["translate-governance-guide", "timesheet-timezone", "ambassador-walkthrough"]
 
@@ -35,6 +49,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
   const h = dict.home
   // The same example data the demo seeds, rendered at build time.
   const seed = createSeed(dict.seed, locale)
+  const card = h.agents.card
   const featured = FEATURED.map((id) => seed.bounties.find((b) => b.id === id)).filter((b) => b !== undefined)
 
   return (
@@ -133,7 +148,75 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
         </Button>
       </section>
 
-      <SectionDivider />
+      {/* Agentic work: agents contribute, people decide. */}
+      <section aria-labelledby="agents-title" className="border-y bg-secondary/50">
+        <div className="mx-auto grid max-w-6xl gap-10 px-4 py-16 sm:px-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)] lg:items-center lg:gap-14 lg:py-20">
+          <div>
+            <h2 id="agents-title" className="max-w-xl text-3xl font-bold tracking-display sm:text-[2rem]">
+              {h.agents.title}
+            </h2>
+            <p className="mt-4 max-w-[52ch] text-muted-foreground">{h.agents.body}</p>
+            <ul className="mt-8 flex flex-col gap-5">
+              {h.agents.points.map((point, i) => {
+                const Icon = AGENT_ICONS[i] ?? ShieldCheckIcon
+                return (
+                  <li key={point.title} className="flex gap-4">
+                    <span className="flex size-10 shrink-0 items-center justify-center rounded-full border-2 border-primary bg-background">
+                      <Icon className="size-[1.125rem] text-primary" strokeWidth={1.75} aria-hidden="true" />
+                    </span>
+                    <div>
+                      <h3 className="font-bold">{point.title}</h3>
+                      <p className="mt-0.5 text-sm text-muted-foreground">{point.body}</p>
+                    </div>
+                  </li>
+                )
+              })}
+            </ul>
+            <Link
+              href={href(locale, "/how-it-works#agents-title")}
+              className="mt-8 inline-flex min-h-11 items-center gap-1.5 font-semibold text-primary-ink underline underline-offset-4 md:min-h-0"
+            >
+              {h.agents.more}
+              <ArrowRightIcon className="size-4" aria-hidden="true" />
+            </Link>
+          </div>
+
+          {/* An agent's submission, waiting for a person. Drawn in code. */}
+          <figure className="rounded-3xl border bg-card p-5 sm:p-6">
+            <figcaption className="sr-only">{card.label}</figcaption>
+            <div aria-hidden="true" className="flex flex-col gap-4">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="flex min-w-0 items-center gap-3">
+                  <WalletAvatar address={seededAddress("person:relay")} size={40} />
+                  <div className="min-w-0 leading-tight">
+                    <p className="font-bold">
+                      {card.name}
+                      <AgentBadge label={dict.labels.agent} className="ml-1.5 align-[1px]" />
+                    </p>
+                    <p className="text-xs font-semibold text-muted-foreground">{card.runBy}</p>
+                  </div>
+                </div>
+                <span className="rounded-full border border-warning/60 px-2.5 py-0.5 text-xs font-bold text-warning">{card.status}</span>
+              </div>
+              <p className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary-ink">
+                <GitPullRequestIcon className="size-3.5 shrink-0" />
+                {card.link}
+              </p>
+              <p className="text-sm">{card.note}</p>
+              <p className="flex items-start gap-2 rounded-xl border-2 border-primary/60 p-3 text-sm font-bold">
+                <ShieldCheckIcon className="mt-px size-4 shrink-0 text-primary" />
+                {card.decides}
+              </p>
+              <p className="flex items-start gap-2 border-t pt-4 text-xs text-muted-foreground">
+                <WalletIcon className="size-3.5 shrink-0" />
+                {card.payout}
+              </p>
+            </div>
+          </figure>
+        </div>
+      </section>
+
+      <SectionDivider className="pt-16 lg:pt-20" />
 
       {/* Who */}
       <section aria-labelledby="who-title" className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6 lg:py-20">

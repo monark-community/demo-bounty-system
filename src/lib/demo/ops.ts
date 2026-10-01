@@ -2,7 +2,8 @@
 
 import { randomAddress, randomHex } from "./ids"
 import { getDemo, update, updateBounty } from "./store"
-import type { Bounty, BountyEvent, Category, DemoState, Difficulty, ReviewMode, Submission, TokenSymbol, Visibility } from "./types"
+import { canDecide } from "./select"
+import type { AgentPolicy, Bounty, BountyEvent, Category, DemoState, Difficulty, ReviewMode, Submission, TokenSymbol, Visibility } from "./types"
 
 /**
  * State transitions, one per contract call. Each runs only after the
@@ -39,6 +40,7 @@ export interface BountyDraft {
   reward: string
   deadline: string
   visibility: Visibility
+  agents: AgentPolicy
   review: ReviewMode
   org: string
 }
@@ -110,7 +112,7 @@ export function approveSubmission(bountyId: string, submissionId: string, hash: 
   update((s) => {
     const b = s.bounties.find((x) => x.id === bountyId)
     const winner = b?.submissions.find((x) => x.id === submissionId)
-    if (!b || !winner || b.status !== "open") return s
+    if (!b || !winner || b.status !== "open" || !canDecide(s, winner, decider)) return s
     const approved: BountyEvent = { id: evId(), at, kind: "approved", personId: decider, hash, submissionId }
     const next = payout({ ...b, events: [...b.events, approved] }, submissionId, hash, at)
     return creditIfYou({ ...s, bounties: s.bounties.map((x) => (x.id === bountyId ? next : x)) }, b, winner.personId)
@@ -148,6 +150,7 @@ export function castVote(bountyId: string, submissionId: string, personId: strin
     const { validators, quorum } = b.review
     const target = b.submissions.find((x) => x.id === submissionId)
     if (!target || target.status !== "review" || target.votes.some((v) => v.personId === personId)) return s
+    if (!canDecide(s, target, personId)) return s
     const votes = [...target.votes, { personId, approve, note, at, hash }]
     const approvals = votes.filter((v) => v.approve).length
     const rejections = votes.length - approvals

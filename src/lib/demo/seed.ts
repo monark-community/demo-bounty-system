@@ -24,6 +24,7 @@ export const SEED_BOUNTY_IDS = [
   "docs-dark-theme",
   "quebec-study-night",
   "payout-gas-costs",
+  "label-docs-issues",
 ] as const
 
 const DAY = 86_400_000
@@ -47,6 +48,11 @@ function person(
     baseCompleted,
     baseEarned: units(baseEarnedUsdc, "tUSDC"),
   }
+}
+
+/** An AI agent: registered by, and accountable to, its operator. */
+function agent(id: string, name: string, handle: string, operatorId: string, baseReputation: number, baseCompleted: number, baseEarnedUsdc: number): Person {
+  return { ...person(id, name, handle, ["member"], baseReputation, baseCompleted, baseEarnedUsdc), operatorId }
 }
 
 /**
@@ -78,6 +84,9 @@ export function createSeed(copy: SeedCopy, locale: "en" | "fr"): DemoState {
     person("daniel", "Daniel Okafor", "@dokafor", ["member", "ambassador"], 150, 6, 1300),
     person("hugo", "Hugo Lefebvre", "@hugo.lef", ["member"], 60, 3, 450),
     person("sofia", "Sofía Álvarez", "@sofia.alv", ["member"], 205, 8, 2300),
+    // Agents: Sofía runs a coding agent, Théo a docs and triage agent.
+    agent("relay", "Relay", "@relay.agent", "sofia", 120, 9, 950),
+    agent("glossa", "Glossa", "@glossa.agent", "theo", 45, 5, 320),
   ]
 
   const poster: ReviewMode = { kind: "poster" }
@@ -152,6 +161,7 @@ export function createSeed(copy: SeedCopy, locale: "en" | "fr"): DemoState {
       reward: units(300, "tUSDC"),
       deadline: endOfDay(9),
       visibility: "everyone",
+      agents: "humans",
       review: poster,
       posterId: "ines",
       org: o.core,
@@ -166,6 +176,7 @@ export function createSeed(copy: SeedCopy, locale: "en" | "fr"): DemoState {
       reward: units(450, "tUSDC"),
       deadline: endOfDay(6),
       visibility: "members",
+      agents: "welcome",
       review: poster,
       posterId: "ines",
       org: o.core,
@@ -179,6 +190,7 @@ export function createSeed(copy: SeedCopy, locale: "en" | "fr"): DemoState {
       reward: units(2000, "tUSDC"),
       deadline: endOfDay(-2),
       visibility: "members",
+      agents: "humans",
       review: council(2, ["aicha", "marc", YOU_ID]),
       posterId: "ines",
       org: o.council,
@@ -195,6 +207,7 @@ export function createSeed(copy: SeedCopy, locale: "en" | "fr"): DemoState {
       reward: units(600, "tUSDC"),
       deadline: endOfDay(4),
       visibility: "everyone",
+      agents: "welcome",
       review: poster,
       posterId: YOU_ID,
       org: o.core,
@@ -202,6 +215,7 @@ export function createSeed(copy: SeedCopy, locale: "en" | "fr"): DemoState {
       submissions: [
         sub("trust-contacts-tests", "priya", "https://github.com/monark-community/trust-contacts/pull/88", s.priya, 2),
         sub("trust-contacts-tests", "mei", "https://github.com/monark-community/trust-contacts/pull/91", s.mei, 0.4),
+        sub("trust-contacts-tests", "relay", "https://github.com/monark-community/trust-contacts/pull/93", s.relay, 0.2),
       ],
     }),
     bounty("hackathon-poster", {
@@ -212,6 +226,7 @@ export function createSeed(copy: SeedCopy, locale: "en" | "fr"): DemoState {
       reward: units(150, "tUSDC"),
       deadline: endOfDay(12),
       visibility: "everyone",
+      agents: "humans",
       review: poster,
       posterId: "hugo",
       org: o.campus,
@@ -226,6 +241,7 @@ export function createSeed(copy: SeedCopy, locale: "en" | "fr"): DemoState {
       reward: units(200, "tUSDC"),
       deadline: endOfDay(10),
       visibility: "ambassadors",
+      agents: "humans",
       review: poster,
       posterId: "daniel",
       org: o.ambassadors,
@@ -239,6 +255,7 @@ export function createSeed(copy: SeedCopy, locale: "en" | "fr"): DemoState {
       reward: units(400, "tDAI"),
       deadline: endOfDay(15),
       visibility: "members",
+      agents: "welcome",
       review: council(2),
       posterId: "hugo",
       org: o.campus,
@@ -262,6 +279,7 @@ export function createSeed(copy: SeedCopy, locale: "en" | "fr"): DemoState {
           reward: units(350, "tUSDC"),
           deadline: endOfDay(-8),
           visibility: "everyone",
+          agents: "humans",
           review: poster,
           posterId: "ines",
           org: o.core,
@@ -276,6 +294,38 @@ export function createSeed(copy: SeedCopy, locale: "en" | "fr"): DemoState {
         ]
       )
     })(),
+    // Paid: an agents-only chore, won by Glossa and approved by a person.
+    (() => {
+      const winner = sub("label-docs-issues", "glossa", "https://github.com/monark-community/docs/issues?q=label%3Atriaged-2027", s.glossa, 5, {
+        status: "approved",
+        decidedAt: at(-4),
+        decisionHash: seededHash("approve:labels"),
+      })
+      return bounty(
+        "label-docs-issues",
+        {
+          ...b.labels,
+          category: "documentation",
+          difficulty: "beginner",
+          token: "tUSDC",
+          reward: units(120, "tUSDC"),
+          deadline: endOfDay(-3),
+          visibility: "everyone",
+          agents: "only",
+          review: poster,
+          posterId: "marc",
+          org: o.core,
+          createdAt: at(-9),
+          status: "paid",
+          winnerSubmissionId: winner.id,
+          submissions: [winner],
+        },
+        [
+          { id: "labels:approved", at: at(-4), kind: "approved", personId: "marc", hash: seededHash("approve:labels"), submissionId: winner.id },
+          { id: "labels:paid", at: at(-4), kind: "paid", personId: "glossa", amount: units(120, "tUSDC"), hash: seededHash("approve:labels") },
+        ]
+      )
+    })(),
     bounty(
       "quebec-study-night",
       {
@@ -286,6 +336,7 @@ export function createSeed(copy: SeedCopy, locale: "en" | "fr"): DemoState {
         reward: units(250, "tDAI"),
         deadline: endOfDay(-5),
         visibility: "ambassadors",
+        agents: "humans",
         review: poster,
         posterId: "daniel",
         org: o.ambassadors,
@@ -297,7 +348,7 @@ export function createSeed(copy: SeedCopy, locale: "en" | "fr"): DemoState {
   ]
 
   return {
-    version: 1,
+    version: 2,
     seededLocale: locale,
     youId: YOU_ID,
     wallet: {

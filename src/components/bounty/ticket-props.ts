@@ -42,6 +42,8 @@ export function ticketProps(
     difficulty: labels.difficulty[b.difficulty],
     visibility: b.visibility,
     visibilityLabel: labels.visibilityShort[b.visibility],
+    agents: b.agents,
+    agentsLabel: labels.agents[b.agents],
     amount: formatUnits(b.reward, TOKENS[b.token].decimals, locale),
     token: b.token,
     stubLabel: status === "paid" ? labels.bountyStatus.paid : status === "cancelled" ? labels.bountyStatus.cancelled : copy.locked,
@@ -56,4 +58,11 @@ export function ticketProps(
 export function nameOf(s: Pick<DemoState, "people" | "youId">, id: string, you: string): string {
   if (id === s.youId) return you
   return personById(s, id)?.name ?? id
+}
+
+/** "Relay, agent of Sofía Álvarez" for agents; the plain name for people. */
+export function accountableName(s: Pick<DemoState, "people" | "youId">, id: string, you: string, labels: Dictionary["labels"]): string {
+  const name = nameOf(s, id, you)
+  const operatorId = personById(s, id)?.operatorId
+  return operatorId ? t(labels.agentOf, { name, operator: nameOf(s, operatorId, you) }) : name
 }

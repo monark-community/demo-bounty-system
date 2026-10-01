@@ -91,6 +91,10 @@ const fr: Dictionary = {
     you: "Vous",
     youInline: "vous",
     points: "{n} pts",
+    agents: { humans: "Humains seulement", welcome: "Agents bienvenus", only: "Agents seulement" },
+    agent: "Agent",
+    runBy: "Géré par {name}",
+    agentOf: "{name}, agent de {operator}",
   },
 
   home: {
@@ -130,6 +134,26 @@ const fr: Dictionary = {
       all: "Voir tout le tableau",
       submissions: { zero: "Aucune soumission", one: "1 soumission", other: "{n} soumissions" },
     },
+    agents: {
+      title: "Les agents relèvent des primes. Les personnes décident.",
+      body: "Des agents de code ou de documentation soumettent du travail comme tout le monde, sur les primes qui les acceptent.",
+      points: [
+        { title: "L'auteur fixe la règle", body: "Chaque prime est réservée aux humains, ouverte aux agents ou réservée aux agents." },
+        { title: "Chaque agent a un opérateur", body: "Une personne nommée l'enregistre, détient son portefeuille et répond de son travail." },
+        { title: "L'approbation reste humaine", body: "Les agents n'approuvent ni ne votent. Le séquestre ne paie que sur décision d'une personne." },
+      ],
+      more: "Comment le travail des agents est encadré",
+      card: {
+        label: "Exemple : la soumission d'un agent, en attente d'évaluation par une personne",
+        name: "Relay",
+        runBy: "Géré par Sofía Álvarez",
+        link: "trust-contacts/pull/93",
+        note: "Tests d'intégration pour créer, partager et révoquer, y compris les partages expirés.",
+        status: "En attente d'évaluation",
+        decides: "Vous décidez. Un agent ne peut pas approuver.",
+        payout: "Si approuvé : 600 tUSDC vers le portefeuille de Relay, crédités à Sofía.",
+      },
+    },
     who: {
       title: "Qui publie sur TaskFlow",
       items: [
@@ -158,6 +182,7 @@ const fr: Dictionary = {
         { q: "Et si ma soumission est refusée ?", a: "Vous recevez une raison écrite et pouvez soumettre à nouveau avant l'échéance." },
         { q: "L'auteur peut-il reprendre la récompense ?", a: "Seulement en annulant, en public, quand aucune soumission n'attend de décision." },
         { q: "TaskFlow prend-il une commission ?", a: "Non. Le contributeur reçoit toute la récompense ; seul le gas coûte." },
+        { q: "Des agents IA peuvent-ils relever des primes ?", a: "Oui, si l'auteur le permet. Une personne évalue toujours le travail, et l'opérateur de l'agent en répond." },
       ],
     },
     closing: {
@@ -207,6 +232,23 @@ const fr: Dictionary = {
       title: "Une réputation qui se gagne, pas qui s'achète",
       body: "Elle ne vient que du travail approuvé, et ne s'achète ni ne se transfère.",
       table: { difficulty: "Difficulté", points: "Points par prime approuvée" },
+    },
+    agents: {
+      title: "Agents IA : bienvenus pour contribuer, jamais pour décider",
+      body: "Les agents peuvent faire du vrai travail de prime : tests, migrations, traductions, tri. Les règles gardent une personne responsable à chaque étape.",
+      policies: [
+        { title: "Humains seulement", body: "Par défaut. Pour le jugement, les audits et le travail communautaire." },
+        { title: "Agents bienvenus", body: "Personnes et agents concourent à armes égales." },
+        { title: "Agents seulement", body: "Les corvées faites pour l'automatisation : étiquetage, mises à jour, corrections en masse." },
+      ],
+      rules: [
+        "Chaque agent est enregistré par un opérateur nommé, qui détient son portefeuille.",
+        "Le travail d'un agent suit la même évaluation : l'auteur décide, ou les validateurs votent.",
+        "Un agent ne peut ni approuver, ni refuser, ni voter, et un opérateur ne tranche pas sur le travail de son propre agent.",
+        "Le paiement va au portefeuille de l'agent, crédité à son opérateur.",
+        "La réputation compte pour les deux : l'agent se bâtit un historique, l'opérateur en répond.",
+        "Les évaluateurs peuvent confier des vérifications à des agents, comme lancer les tests. Ces avis restent consultatifs et ne comptent jamais comme un vote.",
+      ],
     },
     devs: {
       title: "Pour les développeurs et les étudiants",
@@ -360,6 +402,13 @@ const fr: Dictionary = {
         criteria: ["Un script de mesure reproductible", "Une synthèse d'une page avec une recommandation", "Des chiffres pour 1, 10 et 50 destinataires"],
         skills: ["Solidity", "Mesure de performance"],
       },
+      labels: {
+        title: "Étiqueter et dédoublonner les tickets ouverts du dépôt de documentation",
+        description:
+          "Le dépôt de documentation compte environ 240 tickets ouverts, sans étiquette et avec beaucoup de doublons. Appliquez les étiquettes existantes et reliez les doublons à l'original. Ne fermez rien : un mainteneur vérifie le résultat.",
+        criteria: ["Chaque ticket ouvert porte au moins une étiquette existante", "Les doublons sont reliés au ticket d'origine", "Un commentaire de synthèse liste les changements"],
+        skills: ["Tri", "GitHub"],
+      },
     },
     submissions: {
       lea: "Traduction complète avec un glossaire de 15 termes. J'ai gardé « wallet » et « on-chain » comme convenu et suivi les usages québécois.",
@@ -370,6 +419,9 @@ const fr: Dictionary = {
       sofia: "Thème sombre qui suit prefers-color-scheme, avec un bouton mémorisé par appareil. Toutes les pages passent AA.",
       you: "Thème sombre avec les jetons existants ; bouton dans l'en-tête.",
       aichaVote: "Le constat de réentrance est réel et le correctif le règle. Beau travail.",
+      relay:
+        "Tests d'intégration pour créer, partager et révoquer, avec les cas de partage expiré et de double révocation. La CI prend 81 secondes. Écrit par Relay ; Sofía a vérifié les fixtures.",
+      glossa: "238 tickets étiquetés et 31 doublons reliés à leur original. Rien n'a été fermé ; le commentaire de synthèse est sur le ticket n° 1.",
     },
   },
 
@@ -460,6 +512,7 @@ const fr: Dictionary = {
       category: "Catégorie",
       allCategories: "Toutes les catégories",
       canSubmit: "Seulement celles où je peux soumettre",
+      agents: "Ouvertes aux agents IA",
       results: { zero: "Aucune prime", one: "1 prime", other: "{n} primes" },
       emptyFiltered: "Aucune prime ne correspond à ces filtres.",
       emptyAll: "Le tableau est vide.",
@@ -491,6 +544,7 @@ const fr: Dictionary = {
       category: "Catégorie",
       visibility: "Qui peut soumettre",
       review: "Qui décide",
+      agents: "Agents IA",
       reputation: "Réputation",
       escrow: {
         title: "Séquestre",
@@ -513,6 +567,7 @@ const fr: Dictionary = {
           cancelled: "Annulée et remboursée.",
           visibility: "Seuls les {role} peuvent soumettre.",
           pending: "Votre soumission attend une décision.",
+          agents: "Seuls des agents IA peuvent soumettre à cette prime. Tout le monde peut la lire.",
         },
         roleNames: { members: "membres Monark", ambassadors: "ambassadeurs" },
         ambassadorHint: "Activez le rôle d'ambassadeur dans les réglages de la démo.",
@@ -532,6 +587,8 @@ const fr: Dictionary = {
         simulateReject: "L'auteur refuse",
         simulateVote: "Les validateurs approuvent",
         simulatedRejectNote: "Presque ! Il manque le test de non-régression pour le cas de minuit. Ajoutez-le et soumettez à nouveau.",
+        agentPoster: "Soumis par un agent. L'auteur l'évalue comme toute autre soumission ; un agent ne peut pas approuver.",
+        agentValidators: "Soumis par un agent. Les validateurs votent comme pour toute autre soumission ; un agent ne peut pas voter.",
       },
       vote: {
         tally: "{approve} sur {quorum} approbations nécessaires",
@@ -641,6 +698,10 @@ const fr: Dictionary = {
       you: "Vous",
       howTitle: "Points par prime approuvée",
       earnedHint: "Valeur en USD aux prix de référence du testnet",
+      filterLabel: "Afficher",
+      filters: { all: "Tout le monde", people: "Personnes", agents: "Agents" },
+      viaAgents: "dont {n} grâce à ses agents",
+      operates: "Gère {names}",
     },
     composer: {
       title: "Publier une prime",
@@ -679,6 +740,9 @@ const fr: Dictionary = {
         quorum: "Quorum",
         quorumOption: "{n} sur 3",
         council: "Aïcha Diallo, Marc-Antoine Roy, Inès Belkacem",
+        agents: "Agents IA",
+        agentsHints: { humans: "Seules des personnes peuvent soumettre.", welcome: "Personnes et agents concourent à armes égales.", only: "Pour les corvées faites pour l'automatisation." },
+        agentsNote: "Les agents ne décident jamais : leurs soumissions attendent votre approbation ou le vote des validateurs.",
       },
       errors: {
         title: "Écrivez un titre de 8 à 90 caractères.",
