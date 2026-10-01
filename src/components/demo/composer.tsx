@@ -33,6 +33,7 @@ import { cn } from "@/lib/utils"
 
 import { useAppCopy } from "./app-provider"
 import { ConnectCard } from "./app-frame"
+import { NativeSelect } from "./native-select"
 import { TxFeedback } from "./tx-feedback"
 
 interface Draft {
@@ -258,16 +259,16 @@ export function Composer() {
             </Field>
             <div className="grid gap-5 sm:grid-cols-2">
               <Field id={`${uid}-category`} label={f.category}>
-                <NativeSelect id={`${uid}-category`} value={draft.category} onChange={(v) => set("category", v as Category)}>
+                <Select id={`${uid}-category`} value={draft.category} onChange={(v) => set("category", v as Category)}>
                   {CATEGORIES.map((x) => (
                     <option key={x} value={x}>
                       {labels.category[x]}
                     </option>
                   ))}
-                </NativeSelect>
+                </Select>
               </Field>
               <Field id={`${uid}-difficulty`} label={f.difficulty} hint={t(f.difficultyHint, { points: t(labels.points, { n: REPUTATION[draft.difficulty] }) })}>
-                <NativeSelect
+                <Select
                   id={`${uid}-difficulty`}
                   value={draft.difficulty}
                   onChange={(v) => set("difficulty", v as Difficulty)}
@@ -278,7 +279,7 @@ export function Composer() {
                       {labels.difficulty[x]}
                     </option>
                   ))}
-                </NativeSelect>
+                </Select>
               </Field>
             </div>
             <Field id={`${uid}-skills`} label={f.skills} hint={f.skillsHint} error={shown.skills}>
@@ -312,13 +313,13 @@ export function Composer() {
                 />
               </Field>
               <Field id={`${uid}-token`} label={f.token}>
-                <NativeSelect id={`${uid}-token`} value={draft.token} onChange={(v) => set("token", v as TokenSymbol)}>
+                <Select id={`${uid}-token`} value={draft.token} onChange={(v) => set("token", v as TokenSymbol)}>
                   {TOKEN_LIST.map((x) => (
                     <option key={x} value={x}>
                       {x}
                     </option>
                   ))}
-                </NativeSelect>
+                </Select>
               </Field>
             </div>
             <Field id={`${uid}-deadline`} label={f.deadline} error={shown.deadline}>
@@ -391,13 +392,13 @@ export function Composer() {
                     <Label htmlFor={`${uid}-quorum`} className="text-sm font-bold">
                       {f.quorum}
                     </Label>
-                    <NativeSelect id={`${uid}-quorum`} value={String(draft.quorum)} onChange={(v) => set("quorum", v === "3" ? 3 : 2)}>
+                    <Select id={`${uid}-quorum`} value={String(draft.quorum)} onChange={(v) => set("quorum", v === "3" ? 3 : 2)}>
                       {[2, 3].map((n) => (
                         <option key={n} value={n}>
                           {t(f.quorumOption, { n })}
                         </option>
                       ))}
-                    </NativeSelect>
+                    </Select>
                   </div>
                 </div>
               ) : null}
@@ -481,7 +482,7 @@ function Field({ id, label, hint, error, children }: { id: string; label: string
   )
 }
 
-function NativeSelect({
+function Select({
   id,
   value,
   onChange,
@@ -495,15 +496,9 @@ function NativeSelect({
   children: ReactNode
 }) {
   return (
-    <select
-      id={id}
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      aria-describedby={describedBy}
-      className="h-10 w-full rounded-full border border-input bg-background px-4 text-sm font-semibold"
-    >
+    <NativeSelect id={id} value={value} onChange={(e) => onChange(e.target.value)} aria-describedby={describedBy} className="h-10 w-full">
       {children}
-    </select>
+    </NativeSelect>
   )
 }
 

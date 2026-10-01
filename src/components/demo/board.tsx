@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils"
 
 import { useAppCopy } from "./app-provider"
 import { ConnectCard } from "./app-frame"
+import { NativeSelect } from "./native-select"
 
 type StatusFilter = "open" | "closed" | "done" | "all"
 const STATUS_FILTERS: StatusFilter[] = ["open", "closed", "done", "all"]
@@ -129,11 +130,11 @@ export function Board() {
                 <Label htmlFor="board-category" className="text-sm font-semibold">
                   {b.category}
                 </Label>
-                <select
+                <NativeSelect
                   id="board-category"
                   value={category}
                   onChange={(e) => setCategory(e.target.value as Category | "all")}
-                  className="h-9 rounded-full border border-input bg-background px-3 text-sm font-semibold"
+                  className="h-9"
                 >
                   <option value="all">{b.allCategories}</option>
                   {CATEGORIES.map((c) => (
@@ -141,7 +142,7 @@ export function Board() {
                       {labels.category[c]}
                     </option>
                   ))}
-                </select>
+                </NativeSelect>
               </div>
               <div className="flex min-h-9 items-center gap-2">
                 <Checkbox id="board-agents" checked={agentsOk} onCheckedChange={(v) => setAgentsOk(v === true)} />
