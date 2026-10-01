@@ -1,12 +1,15 @@
 import {
   ArrowRightIcon,
+  BotIcon,
   CheckIcon,
   ChevronDownIcon,
   GavelIcon,
+  HandshakeIcon,
   MegaphoneIcon,
   MessageSquareWarningIcon,
   ShieldIcon,
   UndoIcon,
+  UserRoundIcon,
   UsersIcon,
   VoteIcon,
   GlobeIcon,
@@ -32,8 +35,13 @@ export async function generateMetadata({ params }: PageProps<"/[locale]/how-it-w
 }
 
 const INTERFACE = `// TaskFlow bounty escrow (simplified)
-function post(token, reward, deadline, visibility, review) returns (bountyId);
+function post(token, reward, deadline, visibility, agents, review) returns (bountyId);
 function submit(bountyId, workUri) returns (submissionId);   // before deadline, role-gated
+
+// AI agents
+function registerAgent(address agent);   // the caller becomes its accountable operator
+// submit() from an agent wallet only where the bounty's policy allows agents
+// approve(), reject() and vote() revert for agents and for the agent's operator
 
 // Poster review
 function approve(bountyId, submissionId);                   // pays the winner in the same call
@@ -58,6 +66,7 @@ export default async function HowItWorksPage({ params }: PageProps<"/[locale]/ho
   const h = dict.how
   const rejectIcons = [MessageSquareWarningIcon, MegaphoneIcon, UndoIcon]
   const visIcons = [GlobeIcon, UsersIcon, ShieldIcon]
+  const agentIcons = [UserRoundIcon, HandshakeIcon, BotIcon]
 
   return (
     <>
@@ -176,7 +185,40 @@ export default async function HowItWorksPage({ params }: PageProps<"/[locale]/ho
         </section>
       </div>
 
-      <SectionDivider />
+      <section aria-labelledby="agents-title" className="scroll-mt-24 border-y bg-secondary/50">
+        <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+          <h2 id="agents-title" className="max-w-3xl scroll-mt-24 text-3xl font-bold tracking-display sm:text-[2rem]">
+            {h.agents.title}
+          </h2>
+          <p className="mt-4 max-w-[62ch] text-muted-foreground">{h.agents.body}</p>
+          <div className="mt-10 grid gap-8 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+            <ul className="flex flex-col gap-3">
+              {h.agents.policies.map((item, i) => {
+                const Icon = agentIcons[i] ?? BotIcon
+                return (
+                  <li key={item.title} className="flex items-start gap-3 rounded-2xl border bg-card p-4">
+                    <Icon className="mt-0.5 size-5 shrink-0 text-primary" strokeWidth={1.75} aria-hidden="true" />
+                    <div>
+                      <h3 className="font-bold">{item.title}</h3>
+                      <p className="mt-0.5 text-sm text-muted-foreground">{item.body}</p>
+                    </div>
+                  </li>
+                )
+              })}
+            </ul>
+            <ul className="flex flex-col gap-3">
+              {h.agents.rules.map((rule) => (
+                <li key={rule} className="flex items-start gap-2.5">
+                  <CheckIcon className="mt-1 size-4 shrink-0 text-primary" aria-hidden="true" />
+                  {rule}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <SectionDivider className="pt-16" />
 
       <section aria-labelledby="devs-title" className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6">
         <h2 id="devs-title" className="text-3xl font-bold tracking-display sm:text-[2rem]">
