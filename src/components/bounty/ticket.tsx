@@ -1,9 +1,9 @@
-import { CheckCircle2Icon, ClockIcon, LockIcon, MessageSquareTextIcon, ShieldIcon, UndoIcon, UsersIcon } from "lucide-react"
+import { BotIcon, CheckCircle2Icon, ClockIcon, LockIcon, MessageSquareTextIcon, ShieldIcon, UndoIcon, UsersIcon } from "lucide-react"
 import Link from "next/link"
 import type { ReactNode } from "react"
 
 import { cn } from "@/lib/utils"
-import type { Visibility } from "@/lib/demo/types"
+import type { AgentPolicy, Visibility } from "@/lib/demo/types"
 
 export type TicketStatus = "open" | "closed" | "paid" | "cancelled"
 
@@ -16,6 +16,9 @@ export interface TicketProps {
   difficulty: string
   visibility: Visibility
   visibilityLabel: string
+  /** Shown only when agents may submit. */
+  agents?: AgentPolicy
+  agentsLabel?: string
   amount: string
   token: string
   stubLabel: string
@@ -84,6 +87,8 @@ export function Ticket(props: TicketProps) {
     difficulty,
     visibility,
     visibilityLabel,
+    agents,
+    agentsLabel,
     amount,
     token,
     stubLabel,
@@ -148,6 +153,12 @@ export function Ticket(props: TicketProps) {
             <span className="inline-flex items-center gap-1">
               <VisibilityIcon visibility={visibility} />
               {visibilityLabel}
+            </span>
+          ) : null}
+          {agents && agents !== "humans" ? (
+            <span className="inline-flex items-center gap-1">
+              <BotIcon className="size-3.5" aria-hidden="true" />
+              {agentsLabel}
             </span>
           ) : null}
         </p>

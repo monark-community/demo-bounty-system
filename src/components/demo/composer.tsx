@@ -1,6 +1,6 @@
 "use client"
 
-import { BugIcon, FileTextIcon, LockIcon, ShieldIcon } from "lucide-react"
+import { BugIcon, FileTextIcon, LockIcon, ShieldCheckIcon, ShieldIcon } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useId, useState, type ReactNode } from "react"
 
@@ -18,7 +18,17 @@ import { postBounty } from "@/lib/demo/ops"
 import { COUNCIL } from "@/lib/demo/seed"
 import { useDemo } from "@/lib/demo/store"
 import { parseUnits, TOKEN_LIST, TOKENS } from "@/lib/demo/tokens"
-import { CATEGORIES, DIFFICULTIES, REPUTATION, type Category, type Difficulty, type TokenSymbol, type Visibility } from "@/lib/demo/types"
+import {
+  AGENT_POLICIES,
+  CATEGORIES,
+  DIFFICULTIES,
+  REPUTATION,
+  type AgentPolicy,
+  type Category,
+  type Difficulty,
+  type TokenSymbol,
+  type Visibility,
+} from "@/lib/demo/types"
 import { cn } from "@/lib/utils"
 
 import { useAppCopy } from "./app-provider"
@@ -36,6 +46,7 @@ interface Draft {
   token: TokenSymbol
   deadline: string
   visibility: Visibility
+  agents: AgentPolicy
   review: "poster" | "validators"
   quorum: 2 | 3
 }
@@ -79,6 +90,7 @@ export function Composer() {
     token: "tUSDC",
     deadline: dateInput(14),
     visibility: "everyone",
+    agents: "humans",
     review: "poster",
     quorum: 2,
   }))
@@ -127,6 +139,8 @@ export function Composer() {
       token: "tUSDC",
       review: key === "audit" ? "validators" : "poster",
       visibility: key === "audit" ? "members" : "everyone",
+      // A well-specified bug fix suits agents; docs and audits need people.
+      agents: key === "bug" ? "welcome" : "humans",
     }))
   }
 
@@ -160,6 +174,7 @@ export function Composer() {
             reward: reward.toString(),
             deadline: deadlineIso,
             visibility: draft.visibility,
+            agents: draft.agents,
             review: draft.review === "poster" ? { kind: "poster" } : { kind: "validators", validators: COUNCIL, quorum: draft.quorum },
             org: seed.orgs.core,
           },
@@ -331,6 +346,27 @@ export function Composer() {
               </div>
             </fieldset>
             <fieldset className="flex flex-col gap-2">
+              <legend className="mb-2 text-sm font-bold">{f.agents}</legend>
+              <div className="grid gap-2 sm:grid-cols-3">
+                {AGENT_POLICIES.map((x) => (
+                  <RadioCard
+                    key={x}
+                    name={`${uid}-agents`}
+                    checked={draft.agents === x}
+                    onChange={() => set("agents", x)}
+                    title={labels.agents[x]}
+                    body={f.agentsHints[x]}
+                  />
+                ))}
+              </div>
+              {draft.agents !== "humans" ? (
+                <p className="mt-1 flex items-start gap-2 text-xs text-muted-foreground">
+                  <ShieldCheckIcon className="mt-px size-4 shrink-0 text-primary" aria-hidden="true" />
+                  {f.agentsNote}
+                </p>
+              ) : null}
+            </fieldset>
+            <fieldset className="flex flex-col gap-2">
               <legend className="mb-2 text-sm font-bold">{f.review}</legend>
               <div className="grid gap-2 sm:grid-cols-2">
                 <RadioCard
@@ -395,6 +431,8 @@ export function Composer() {
             difficulty={labels.difficulty[draft.difficulty]}
             visibility={draft.visibility}
             visibilityLabel={labels.visibilityShort[draft.visibility]}
+            agents={draft.agents}
+            agentsLabel={labels.agents[draft.agents]}
             amount={reward && reward > 0n ? formatUnits(reward, decimals, locale) : "0"}
             token={draft.token}
             stubLabel={app.ticket.locked}

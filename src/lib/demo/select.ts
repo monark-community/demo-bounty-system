@@ -7,6 +7,26 @@ export function personById(s: Pick<DemoState, "people">, id: string): Person | u
   return s.people.find((p) => p.id === id)
 }
 
+/** AI agents carry the id of their accountable operator. */
+export function isAgent(p: Person | undefined): boolean {
+  return !!p?.operatorId
+}
+
+/** The agents a person operates. */
+export function agentsOf(s: Pick<DemoState, "people">, operatorId: string): Person[] {
+  return s.people.filter((p) => p.operatorId === operatorId)
+}
+
+/**
+ * Who may approve, reject or vote on a submission: never an agent, never the
+ * contributor, and never the operator of the agent that submitted it.
+ */
+export function canDecide(s: Pick<DemoState, "people">, submission: Submission, deciderId: string): boolean {
+  if (isAgent(personById(s, deciderId))) return false
+  if (deciderId === submission.personId) return false
+  return personById(s, submission.personId)?.operatorId !== deciderId
+}
+
 export function isClosed(b: Bounty, now = Date.now()): boolean {
   return b.status === "open" && new Date(b.deadline).getTime() < now
 }
@@ -21,7 +41,7 @@ export function activeSubmissions(b: Bounty): Submission[] {
   return b.submissions.filter((x) => x.status === "review")
 }
 
-export type SubmitBlock = "own" | "closed" | "paid" | "cancelled" | "visibility" | "pending" | null
+export type SubmitBlock = "own" | "closed" | "paid" | "cancelled" | "agents" | "visibility" | "pending" | null
 
 /** Why the visitor can't submit to this bounty, or null if they can. */
 export function submitBlock(s: DemoState, b: Bounty, now = Date.now()): SubmitBlock {
@@ -30,6 +50,8 @@ export function submitBlock(s: DemoState, b: Bounty, now = Date.now()): SubmitBl
   if (b.status === "cancelled") return "cancelled"
   if (b.posterId === s.youId) return "own"
   if (isClosed(b, now)) return "closed"
+  // The visitor is a person; agents submit through their own wallets.
+  if (b.agents === "only") return "agents"
   if (b.visibility === "ambassadors" && !you?.roles.includes("ambassador")) return "visibility"
   if (b.visibility === "members" && !you?.roles.includes("member")) return "visibility"
   if (b.submissions.some((x) => x.personId === s.youId && x.status === "review")) return "pending"
@@ -42,15 +64,21 @@ export interface Standing {
   completed: number
   /** USD value earned (testnet reference prices). */
   earnedUsd: number
+  /** For operators: the reputation their agents earned, included in `reputation`. */
+  viaAgents: number
 }
 
-/** Reputation = base history + points for every approved submission in the demo. */
+/**
+ * Reputation = base history + points for every approved submission in the
+ * demo, plus, for operators, what their agents earned.
+ */
 export function standings(s: DemoState): Standing[] {
   const rows = s.people.map<Standing>((person) => ({
     person,
     reputation: person.baseReputation,
     completed: person.baseCompleted,
     earnedUsd: usdValue(person.baseEarned, "tUSDC"),
+    viaAgents: 0,
   }))
   const byId = new Map(rows.map((r) => [r.person.id, r]))
   for (const b of s.bounties) {
@@ -61,6 +89,14 @@ export function standings(s: DemoState): Standing[] {
     row.reputation += REPUTATION[b.difficulty]
     row.completed += 1
     row.earnedUsd += usdValue(b.reward, b.token)
+  }
+  // Operators answer for their agents, so an agent's reputation also counts
+  // for its operator. Payouts stay with the agent's wallet.
+  for (const row of rows) {
+    const operator = row.person.operatorId ? byId.get(row.person.operatorId) : undefined
+    if (!operator) continue
+    operator.reputation += row.reputation
+    operator.viaAgents += row.reputation
   }
   return rows.sort((a, b) => b.reputation - a.reputation || b.completed - a.completed || a.person.name.localeCompare(b.person.name))
 }
