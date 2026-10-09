@@ -5,6 +5,7 @@ import { useState } from "react"
 import { AgentBadge } from "@/components/bounty/agent-badge"
 import { nameOf } from "@/components/bounty/ticket-props"
 import { InfoTip } from "@/components/ui/info-tip"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { WalletAvatar } from "@/components/ui/wallet"
 import { t } from "@/i18n/t"
 import { formatNumber, formatUsdWhole } from "@/lib/format"
@@ -14,7 +15,6 @@ import { DIFFICULTIES, REPUTATION } from "@/lib/demo/types"
 import { cn } from "@/lib/utils"
 
 import { useAppCopy } from "./app-provider"
-import { Chip } from "./board"
 
 type Who = "all" | "people" | "agents"
 const WHO: Who[] = ["all", "people", "agents"]
@@ -49,16 +49,21 @@ export function Leaderboard() {
         </InfoTip>
       </div>
 
-      <fieldset className="-mt-4 min-w-0">
-        <legend className="sr-only">{l.filterLabel}</legend>
-        <div className="-mx-1 flex gap-1.5 overflow-x-auto px-1 py-0.5">
-          {WHO.map((w) => (
-            <Chip key={w} active={who === w} onClick={() => setWho(w)}>
-              {l.filters[w]}
-            </Chip>
-          ))}
-        </div>
-      </fieldset>
+      <ToggleGroup
+        type="single"
+        variant="chip"
+        size="sm"
+        aria-label={l.filterLabel}
+        value={who}
+        onValueChange={(v) => v && setWho(v as Who)}
+        className="-mt-4"
+      >
+        {WHO.map((w) => (
+          <ToggleGroupItem key={w} value={w}>
+            {l.filters[w]}
+          </ToggleGroupItem>
+        ))}
+      </ToggleGroup>
 
       <div className="overflow-hidden rounded-2xl border bg-card">
           <table aria-labelledby="leaderboard-title" className="w-full text-sm">

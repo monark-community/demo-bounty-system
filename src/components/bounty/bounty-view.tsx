@@ -5,11 +5,12 @@ import Link from "next/link"
 import { useId, useState } from "react"
 import { toast } from "sonner"
 
-import { useAppCopy } from "@/components/demo/app-provider"
+import { txFeedbackProps, useAppCopy } from "@/components/demo/app-provider"
 import { ConnectCard } from "@/components/demo/app-frame"
-import { TxFeedback } from "@/components/demo/tx-feedback"
 import { Button } from "@/components/ui/button"
+import { Empty, EmptyDescription } from "@/components/ui/empty"
 import { InfoTip } from "@/components/ui/info-tip"
+import { TxFeedback } from "@/components/ui/tx-feedback"
 import { WalletAddress, WalletAvatar } from "@/components/ui/wallet"
 import { href } from "@/i18n/config"
 import { t } from "@/i18n/t"
@@ -195,7 +196,9 @@ export function BountyView({ id }: { id: string }) {
                   ))}
               </ul>
             ) : (
-              <p className="rounded-2xl border border-dashed p-5 text-muted-foreground">{c.submissions.empty}</p>
+              <Empty align="start" size="sm">
+                <EmptyDescription className="text-base">{c.submissions.empty}</EmptyDescription>
+              </Empty>
             )}
           </section>
         </div>
@@ -566,7 +569,7 @@ function SubmissionCard({ demo, bounty, submission }: { demo: DemoState; bounty:
         </div>
       ) : null}
 
-      <TxFeedback state={tx.state} onDismiss={() => tx.reset()} />
+      <TxFeedback {...txFeedbackProps(tx.state, app.tx)} onDismiss={() => tx.reset()} />
 
       {/* Demo-only: play the other side of the flow. */}
       {inReview && ((isYours && connected) || (!posterMode && youVoted && othersToSimulate.length > 0)) ? (
@@ -596,7 +599,7 @@ function SubmissionCard({ demo, bounty, submission }: { demo: DemoState; bounty:
                 ))
               : null}
           </div>
-          <TxFeedback state={sim.state} onDismiss={() => sim.reset()} />
+          <TxFeedback {...txFeedbackProps(sim.state, app.tx)} onDismiss={() => sim.reset()} />
         </div>
       ) : null}
 

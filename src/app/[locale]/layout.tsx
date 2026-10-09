@@ -4,9 +4,9 @@ import { notFound } from "next/navigation"
 
 import "../globals.css"
 
-import { SiteFooter } from "@/components/site/footer"
-import { SiteHeader } from "@/components/site/header"
-import { ThemeProvider } from "@/components/site/theme"
+import { Footer } from "@/components/site/footer"
+import { Header, type HeaderCopy } from "@/components/site/header"
+import { ThemeProvider } from "@/components/ui/theme-toggle"
 import { isLocale, locales, SITE_URL } from "@/i18n/config"
 import { getDictionary } from "@/i18n"
 
@@ -55,6 +55,23 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
   const { locale } = await params
   if (!isLocale(locale)) notFound()
   const dict = getDictionary(locale)
+  const c = dict.common
+  // Only the strings the header needs cross into the client bundle.
+  const headerCopy: HeaderCopy = {
+    product: c.product,
+    homeLabel: c.homeLabel,
+    nav: { label: c.nav.label, overview: c.nav.overview, how: c.nav.how, demo: c.nav.demo },
+    menu: c.menu,
+    closeMenu: c.closeMenu,
+    menuTitle: c.menuTitle,
+    demoChip: c.demoChip,
+    demoBadge: c.demoBadge,
+    launchDemo: c.launchDemo,
+    theme: c.theme.toggle,
+    language: { label: c.language.label, names: { en: c.language.en, fr: c.language.fr }, short: c.language.short },
+    wallet: { connect: dict.app.wallet.connect, connecting: dict.app.wallet.connecting, disconnect: dict.app.wallet.disconnect },
+    signIn: { title: dict.app.summaries.signIn, row: dict.app.summaries.signInRow, value: dict.app.summaries.signInValue },
+  }
 
   return (
     <html lang={locale} className={nunito.variable} suppressHydrationWarning>
@@ -64,13 +81,13 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
             href="#main"
             className="sr-only z-50 rounded-full bg-primary px-4 py-2 font-bold text-primary-foreground focus:not-sr-only focus:fixed focus:top-3 focus:left-3"
           >
-            {dict.common.skip}
+            {c.skip}
           </a>
-          <SiteHeader locale={locale} dict={dict} />
+          <Header locale={locale} copy={headerCopy} />
           <main id="main" tabIndex={-1} className="flex flex-1 flex-col outline-none">
             {children}
           </main>
-          <SiteFooter locale={locale} dict={dict} />
+          <Footer locale={locale} dict={dict} />
         </ThemeProvider>
       </body>
     </html>

@@ -2,7 +2,6 @@ import {
   ArrowRightIcon,
   BotIcon,
   CheckIcon,
-  ChevronDownIcon,
   GavelIcon,
   HandshakeIcon,
   MegaphoneIcon,
@@ -20,8 +19,10 @@ import { notFound } from "next/navigation"
 
 import { EscrowDiagram } from "@/components/diagrams/escrow-diagram"
 import { QuorumDiagram } from "@/components/diagrams/quorum-diagram"
-import { SectionDivider } from "@/components/site/section-divider"
 import { Button } from "@/components/ui/button"
+import { Disclosure } from "@/components/ui/disclosure"
+import { SectionDivider } from "@/components/ui/section-divider"
+import { SectionHeading } from "@/components/ui/section-heading"
 import { href, isLocale } from "@/i18n/config"
 import { getDictionary } from "@/i18n"
 import { pageMetadata } from "@/lib/metadata"
@@ -80,10 +81,7 @@ export default async function HowItWorksPage({ params }: PageProps<"/[locale]/ho
         className="mx-auto grid w-full max-w-6xl gap-8 px-4 pb-16 sm:px-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:items-center"
       >
         <div>
-          <h2 id="escrow-title" className="text-3xl font-bold tracking-display sm:text-[2rem]">
-            {h.escrow.title}
-          </h2>
-          <p className="mt-4 text-muted-foreground">{h.escrow.body}</p>
+          <SectionHeading titleId="escrow-title" title={h.escrow.title} lead={h.escrow.body} />
           <ul className="mt-6 flex flex-col gap-3">
             {h.escrow.points.map((p) => (
               <li key={p} className="flex items-start gap-2.5">
@@ -97,10 +95,7 @@ export default async function HowItWorksPage({ params }: PageProps<"/[locale]/ho
       </section>
 
       <section aria-labelledby="decide-title" className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6">
-        <h2 id="decide-title" className="text-3xl font-bold tracking-display sm:text-[2rem]">
-          {h.decide.title}
-        </h2>
-        <p className="mt-4 max-w-[62ch] text-muted-foreground">{h.decide.body}</p>
+        <SectionHeading titleId="decide-title" title={h.decide.title} lead={h.decide.body} />
         <div className="mt-10 grid gap-6 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
           <div className="flex flex-col gap-4">
             {[
@@ -121,9 +116,7 @@ export default async function HowItWorksPage({ params }: PageProps<"/[locale]/ho
 
       <section aria-labelledby="reject-title" className="border-y bg-secondary/50">
         <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-          <h2 id="reject-title" className="text-3xl font-bold tracking-display sm:text-[2rem]">
-            {h.reject.title}
-          </h2>
+          <SectionHeading titleId="reject-title" title={h.reject.title} />
           <ul className="mt-10 grid gap-8 md:grid-cols-3">
             {h.reject.items.map((item, i) => {
               const Icon = rejectIcons[i] ?? UndoIcon
@@ -141,10 +134,7 @@ export default async function HowItWorksPage({ params }: PageProps<"/[locale]/ho
 
       <div className="mx-auto grid w-full max-w-6xl gap-10 px-4 py-16 sm:px-6 lg:grid-cols-2">
         <section aria-labelledby="vis-title">
-          <h2 id="vis-title" className="text-3xl font-bold tracking-display sm:text-[2rem]">
-            {h.visibility.title}
-          </h2>
-          <p className="mt-4 text-muted-foreground">{h.visibility.body}</p>
+          <SectionHeading titleId="vis-title" title={h.visibility.title} lead={h.visibility.body} />
           <ul className="mt-6 flex flex-col gap-3">
             {h.visibility.items.map((item, i) => {
               const Icon = visIcons[i] ?? GlobeIcon
@@ -158,10 +148,7 @@ export default async function HowItWorksPage({ params }: PageProps<"/[locale]/ho
           </ul>
         </section>
         <section aria-labelledby="rep-title">
-          <h2 id="rep-title" className="text-3xl font-bold tracking-display sm:text-[2rem]">
-            {h.reputation.title}
-          </h2>
-          <p className="mt-4 text-muted-foreground">{h.reputation.body}</p>
+          <SectionHeading titleId="rep-title" title={h.reputation.title} lead={h.reputation.body} />
           <table className="mt-6 w-full overflow-hidden rounded-2xl border bg-card text-sm">
             <thead className="bg-muted/50 text-left">
               <tr>
@@ -187,10 +174,7 @@ export default async function HowItWorksPage({ params }: PageProps<"/[locale]/ho
 
       <section aria-labelledby="agents-title" className="scroll-mt-24 border-y bg-secondary/50">
         <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-          <h2 id="agents-title" className="max-w-3xl scroll-mt-24 text-3xl font-bold tracking-display sm:text-[2rem]">
-            {h.agents.title}
-          </h2>
-          <p className="mt-4 max-w-[62ch] text-muted-foreground">{h.agents.body}</p>
+          <SectionHeading titleId="agents-title" title={h.agents.title} lead={h.agents.body} className="max-w-3xl" />
           <div className="mt-10 grid gap-8 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
             <ul className="flex flex-col gap-3">
               {h.agents.policies.map((item, i) => {
@@ -218,20 +202,16 @@ export default async function HowItWorksPage({ params }: PageProps<"/[locale]/ho
         </div>
       </section>
 
-      <SectionDivider className="pt-16" />
+      <SectionDivider contained className="pt-16" />
 
       <section aria-labelledby="devs-title" className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6">
-        <h2 id="devs-title" className="text-3xl font-bold tracking-display sm:text-[2rem]">
-          {h.devs.title}
-        </h2>
-        <p className="mt-4 max-w-[68ch] text-muted-foreground">{h.devs.body}</p>
+        <SectionHeading titleId="devs-title" title={h.devs.title} lead={h.devs.body} />
         {/* Context on demand: the contract interface and the data layer map sit behind a disclosure. */}
-        <details className="group mt-6 rounded-2xl border bg-card">
-          <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-4 px-5 py-3 font-bold [&::-webkit-details-marker]:hidden">
-            {h.devs.show}
-            <ChevronDownIcon className="size-5 shrink-0 transition-transform duration-200 group-open:rotate-180" aria-hidden="true" />
-          </summary>
-          <div className="grid gap-6 border-t p-4 sm:p-5 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
+        <Disclosure
+          summary={h.devs.show}
+          className="mt-6"
+          contentClassName="grid gap-6 p-4 sm:p-5 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]"
+        >
             <figure className="min-w-0">
               <figcaption className="text-sm font-bold">{h.devs.codeLabel}</figcaption>
               <pre className="mt-3 overflow-x-auto rounded-2xl border bg-card p-4 font-mono text-xs leading-relaxed">
@@ -256,8 +236,7 @@ export default async function HowItWorksPage({ params }: PageProps<"/[locale]/ho
                 ))}
               </ul>
             </div>
-          </div>
-        </details>
+        </Disclosure>
       </section>
 
       <section aria-labelledby="cta-title" className="mx-auto w-full max-w-6xl px-4 pb-20 sm:px-6">

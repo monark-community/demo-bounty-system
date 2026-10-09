@@ -1,75 +1,92 @@
-import { href, type Locale } from "@/i18n/config"
-import type { Dictionary } from "@/i18n"
+"use client"
 
-import { Brand } from "./brand"
-import { DemoChip } from "./demo-chip"
-import { HeaderAction, type WalletLabels } from "./header-action"
-import { LocaleSwitch } from "./locale-switch"
-import { MobileMenu } from "./mobile-menu"
-import { NavLinks } from "./nav-links"
-import { ThemeToggle } from "./theme"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
+
+import { DemoChip } from "@/components/ui/demo-chip"
+import { HeaderAction } from "@/components/ui/header-action"
+import { LocaleSwitch } from "@/components/ui/locale-switch"
+import { SiteBrand } from "@/components/ui/site-brand"
+import { SiteHeader } from "@/components/ui/site-header"
+import { ThemeToggle } from "@/components/ui/theme-toggle"
+import { href, locales, switchLocalePath, type Locale } from "@/i18n/config"
+import { useDemo } from "@/lib/demo/store"
+import { connectWallet, disconnectWallet } from "@/lib/demo/wallet"
+
+export interface HeaderCopy {
+  product: string
+  homeLabel: string
+  nav: { label: string; overview: string; how: string; demo: string }
+  menu: string
+  closeMenu: string
+  menuTitle: string
+  demoChip: string
+  demoBadge: string
+  launchDemo: string
+  theme: string
+  language: { label: string; names: Record<Locale, string>; short: Record<Locale, string> }
+  wallet: { connect: string; connecting: string; disconnect: string }
+  signIn: { title: string; row: string; value: string }
+}
 
 /**
- * Standard Monark shell header (brand guidelines §10):
- * [mark] {Product}  links…            (• Demo) (EN|FR) (☾) [Primary action]
- * Below `lg`: the brand and a menu button only; everything else is in the sheet.
+ * The standard Monark site header (@monark/ui site-header), wired to Next.js:
+ * [mark] TaskFlow  links…   (• Demo) (EN|FR) (☾) [Launch demo | wallet]
  */
-export function SiteHeader({ locale, dict }: { locale: Locale; dict: Dictionary }) {
-  const c = dict.common
-  const items = [
-    { href: href(locale), label: c.nav.overview },
-    { href: href(locale, "/how-it-works"), label: c.nav.how },
-    { href: href(locale, "/app"), label: c.nav.demo },
-  ]
-  const appHref = href(locale, "/app")
-  const wallet: WalletLabels = {
-    connect: dict.app.wallet.connect,
-    connecting: dict.app.wallet.connecting,
-    disconnect: dict.app.wallet.disconnect,
-    signIn: dict.app.summaries.signIn,
-    signInRow: dict.app.summaries.signInRow,
-    signInValue: dict.app.summaries.signInValue,
-  }
-  const languageNames = { en: c.language.en, fr: c.language.fr }
+export function Header({ locale, copy }: { locale: Locale; copy: HeaderCopy }) {
+  const pathname = usePathname() ?? `/${locale}`
+  const demo = useDemo()
 
   return (
-    <header className="sticky top-0 z-40 border-b bg-background/90 backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-6xl items-center px-4 sm:px-6">
-        <Brand href={href(locale)} name={c.product} label={c.homeLabel} />
-
-        {/* Links: 28px after the brand (20px margin + the link's own 8px padding). */}
-        <nav aria-label={c.nav.label} className="ml-5 hidden lg:block">
-          <NavLinks items={items} className="flex items-center gap-1.5" />
-        </nav>
-
-        <div className="ml-auto hidden items-center gap-2.5 lg:flex">
-          <DemoChip label={c.demoChip} title={c.demoBadge} />
-          <LocaleSwitch locale={locale} label={c.language.label} names={languageNames} short={c.language.short} />
-          <ThemeToggle label={c.theme.toggle} />
-          <HeaderAction appHref={appHref} launchLabel={c.launchDemo} wallet={wallet} />
-        </div>
-
-        <MobileMenu
-          locale={locale}
-          items={items}
-          appHref={appHref}
-          wallet={wallet}
-          className="ml-auto lg:hidden"
-          labels={{
-            open: c.menu,
-            close: c.closeMenu,
-            title: c.menuTitle,
-            description: c.nav.label,
-            launch: c.launchDemo,
-            theme: c.theme.toggle,
-            language: c.language.label,
-            names: languageNames,
-            short: c.language.short,
-            demo: c.demoChip,
-            demoTitle: c.demoBadge,
+    <SiteHeader
+      pathname={pathname}
+      LinkComponent={Link}
+      brand={<SiteBrand name={copy.product} href={href(locale)} aria-label={copy.homeLabel} LinkComponent={Link} />}
+      links={[
+        { href: href(locale), label: copy.nav.overview, exact: true },
+        { href: href(locale, "/how-it-works"), label: copy.nav.how },
+        { href: href(locale, "/app"), label: copy.nav.demo },
+      ]}
+      labels={{ nav: copy.nav.label, openMenu: copy.menu, closeMenu: copy.closeMenu, menu: copy.menuTitle }}
+      actions={
+        <>
+          <DemoChip label={copy.demoChip} description={copy.demoBadge} />
+          <LocaleSwitch
+            locales={locales}
+            current={locale}
+            hrefFor={(l) => switchLocalePath(pathname, l)}
+            labels={{ label: copy.language.label, names: copy.language.names, short: copy.language.short }}
+            LinkComponent={Link}
+            linkProps={{ prefetch: false }}
+          />
+          <ThemeToggle label={copy.theme} />
+        </>
+      }
+      primaryAction={
+        <HeaderAction
+          appHref={href(locale, "/app")}
+          pathname={pathname}
+          launchLabel={copy.launchDemo}
+          LinkComponent={Link}
+          loading={!demo}
+          wallet={{
+            status: demo?.wallet.status,
+            address: demo?.wallet.address,
+            name: demo?.wallet.name,
+            connectLabel: copy.wallet.connect,
+            connectingLabel: copy.wallet.connecting,
+            disconnectLabel: copy.wallet.disconnect,
+            onConnect: () =>
+              void connectWallet({
+                title: copy.signIn.title,
+                rows: [{ label: copy.signIn.row, value: copy.signIn.value }],
+                movesValue: false,
+                noFee: true,
+              }),
+            onDisconnect: disconnectWallet,
           }}
         />
-      </div>
-    </header>
+      }
+    />
   )
 }

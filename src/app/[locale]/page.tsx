@@ -18,8 +18,10 @@ import { AgentBadge } from "@/components/bounty/agent-badge"
 import { Ticket } from "@/components/bounty/ticket"
 import { ticketProps } from "@/components/bounty/ticket-props"
 import { HeroTicket } from "@/components/home/hero-ticket"
-import { SectionDivider } from "@/components/site/section-divider"
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Button } from "@/components/ui/button"
+import { SectionDivider } from "@/components/ui/section-divider"
+import { SectionHeading } from "@/components/ui/section-heading"
 import { WalletAvatar } from "@/components/ui/wallet"
 import { href, isLocale } from "@/i18n/config"
 import { getDictionary } from "@/i18n"
@@ -91,18 +93,19 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
       {/* Four steps */}
       <section aria-labelledby="steps-title" className="border-y bg-secondary/50">
         <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:py-20">
-          <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-            <h2 id="steps-title" className="text-3xl font-bold tracking-display sm:text-[2rem]">
-              {h.steps.title}
-            </h2>
-            <Link
-              href={href(locale, "/how-it-works")}
-              className="inline-flex min-h-11 items-center gap-1.5 font-semibold text-primary-ink underline underline-offset-4 md:min-h-0"
-            >
-              {h.steps.more}
-              <ArrowRightIcon className="size-4" aria-hidden="true" />
-            </Link>
-          </div>
+          <SectionHeading
+            titleId="steps-title"
+            title={h.steps.title}
+            action={
+              <Link
+                href={href(locale, "/how-it-works")}
+                className="inline-flex min-h-11 items-center gap-1.5 font-semibold text-primary-ink underline underline-offset-4 md:min-h-0"
+              >
+                {h.steps.more}
+                <ArrowRightIcon className="size-4" aria-hidden="true" />
+              </Link>
+            }
+          />
           <ol className="relative mt-12 grid gap-8 md:grid-cols-4 md:gap-6">
             {/* One flat orange line joining the four steps (vertical on phones). */}
             <span aria-hidden="true" className="absolute top-2 bottom-2 left-[1.375rem] w-0.5 bg-primary md:top-[1.375rem] md:right-[12.5%] md:bottom-auto md:left-[12.5%] md:h-0.5 md:w-auto" />
@@ -127,9 +130,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
 
       {/* Open right now */}
       <section aria-labelledby="open-title" className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6 lg:py-20">
-        <h2 id="open-title" className="text-3xl font-bold tracking-display sm:text-[2rem]">
-          {h.openNow.title}
-        </h2>
+        <SectionHeading titleId="open-title" title={h.openNow.title} />
         <ul className="mt-10 flex flex-col gap-3">
           {featured.map((b) => {
             const props = ticketProps(b, seed, dict.labels, dict.app.ticket, locale)
@@ -152,10 +153,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
       <section aria-labelledby="agents-title" className="border-y bg-secondary/50">
         <div className="mx-auto grid max-w-6xl gap-10 px-4 py-16 sm:px-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)] lg:items-center lg:gap-14 lg:py-20">
           <div>
-            <h2 id="agents-title" className="max-w-xl text-3xl font-bold tracking-display sm:text-[2rem]">
-              {h.agents.title}
-            </h2>
-            <p className="mt-4 max-w-[52ch] text-muted-foreground">{h.agents.body}</p>
+            <SectionHeading titleId="agents-title" title={h.agents.title} lead={h.agents.body} className="max-w-xl" />
             <ul className="mt-8 flex flex-col gap-5">
               {h.agents.points.map((point, i) => {
                 const Icon = AGENT_ICONS[i] ?? ShieldCheckIcon
@@ -216,13 +214,11 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
         </div>
       </section>
 
-      <SectionDivider className="pt-16 lg:pt-20" />
+      <SectionDivider contained className="pt-16 lg:pt-20" />
 
       {/* Who */}
       <section aria-labelledby="who-title" className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6 lg:py-20">
-        <h2 id="who-title" className="max-w-2xl text-3xl font-bold tracking-display sm:text-[2rem]">
-          {h.who.title}
-        </h2>
+        <SectionHeading titleId="who-title" title={h.who.title} className="max-w-2xl" />
         <ul className="mt-10 grid gap-6 md:grid-cols-3">
           {h.who.items.map((item, i) => (
             <li key={item.title} className="flex flex-col overflow-hidden rounded-3xl border bg-card">
@@ -248,25 +244,17 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
       {/* FAQ */}
       <section aria-labelledby="faq-title" className="border-t bg-secondary/50">
         <div className="mx-auto max-w-3xl px-4 py-16 sm:px-6 lg:py-20">
-          <h2 id="faq-title" className="text-3xl font-bold tracking-display sm:text-[2rem]">
-            {h.faq.title}
-          </h2>
-          <div className="mt-8 divide-y rounded-2xl border bg-card">
+          <SectionHeading titleId="faq-title" title={h.faq.title} />
+          <Accordion type="multiple" variant="plus" className="mt-8 rounded-2xl border bg-card px-5">
             {h.faq.items.map((item) => (
-              <details key={item.q} className="group px-5 py-1">
-                <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-4 py-3 font-bold [&::-webkit-details-marker]:hidden">
-                  {item.q}
-                  <span
-                    aria-hidden="true"
-                    className="flex size-7 shrink-0 items-center justify-center rounded-full border text-lg leading-none transition-transform duration-200 group-open:rotate-45"
-                  >
-                    +
-                  </span>
-                </summary>
-                <p className="pb-4 text-muted-foreground">{item.a}</p>
-              </details>
+              <AccordionItem key={item.q} value={item.q}>
+                <AccordionTrigger>{item.q}</AccordionTrigger>
+                <AccordionContent>
+                  <p>{item.a}</p>
+                </AccordionContent>
+              </AccordionItem>
             ))}
-          </div>
+          </Accordion>
         </div>
       </section>
 

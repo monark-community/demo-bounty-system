@@ -7,6 +7,7 @@ import { useState } from "react"
 import { Ticket } from "@/components/bounty/ticket"
 import { ticketProps } from "@/components/bounty/ticket-props"
 import { Button } from "@/components/ui/button"
+import { Empty, EmptyContent, EmptyDescription } from "@/components/ui/empty"
 import { WalletAvatar } from "@/components/ui/wallet"
 import { href } from "@/i18n/config"
 import { t } from "@/i18n/t"
@@ -174,11 +175,13 @@ function Mini({ label, value, small }: { label: string; value: string; small?: b
 
 function EmptyBox({ text, cta, to }: { text: string; cta: string; to: string }) {
   return (
-    <div className="flex flex-col items-start gap-3 rounded-2xl border border-dashed p-5">
-      <p className="text-muted-foreground">{text}</p>
-      <Button asChild variant="outline" size="sm">
-        <Link href={to}>{cta}</Link>
-      </Button>
-    </div>
+    <Empty align="start" size="sm">
+      <EmptyDescription className="text-base">{text}</EmptyDescription>
+      <EmptyContent>
+        <Button asChild variant="outline" size="sm">
+          <Link href={to}>{cta}</Link>
+        </Button>
+      </EmptyContent>
+    </Empty>
   )
 }

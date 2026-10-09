@@ -2,14 +2,15 @@
 
 import { useId, useState } from "react"
 
-import { useAppCopy } from "@/components/demo/app-provider"
-import { TxFeedback } from "@/components/demo/tx-feedback"
+import { txFeedbackProps, useAppCopy } from "@/components/demo/app-provider"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { FieldError } from "@/components/ui/field-error"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { TxFeedback } from "@/components/ui/tx-feedback"
 import { t } from "@/i18n/t"
 import { formatToken } from "@/lib/format"
 import { useTx } from "@/lib/demo/chain"
@@ -18,15 +19,6 @@ import { getDemo } from "@/lib/demo/store"
 import type { Bounty, Submission } from "@/lib/demo/types"
 
 import { nameOf } from "./ticket-props"
-
-function FieldError({ id, message }: { id: string; message?: string }) {
-  if (!message) return null
-  return (
-    <p id={id} className="text-sm font-semibold text-destructive">
-      {message}
-    </p>
-  )
-}
 
 /** Flow 3: submit work to a bounty. */
 export function SubmitDialog({ bounty, open, onOpenChange }: { bounty: Bounty; open: boolean; onOpenChange: (o: boolean) => void }) {
@@ -87,9 +79,9 @@ export function SubmitDialog({ bounty, open, onOpenChange }: { bounty: Bounty; o
         onOpenChange(o)
       }}
     >
-      <DialogContent closeLabel={app.close} className="max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-lg">
+      <DialogContent closeLabel={app.close} className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle className="text-xl font-extrabold">{c.title}</DialogTitle>
+          <DialogTitle>{c.title}</DialogTitle>
           <DialogDescription className="sr-only">{c.description}</DialogDescription>
         </DialogHeader>
         <form
@@ -101,7 +93,7 @@ export function SubmitDialog({ bounty, open, onOpenChange }: { bounty: Bounty; o
           className="flex flex-col gap-5"
         >
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor={`${ids}-link`} className="font-bold">
+            <Label htmlFor={`${ids}-link`}>
               {c.link}
             </Label>
             <Input
@@ -115,10 +107,10 @@ export function SubmitDialog({ bounty, open, onOpenChange }: { bounty: Bounty; o
               aria-invalid={!!errors.link}
               aria-describedby={`${ids}-link-err`}
             />
-            <FieldError id={`${ids}-link-err`} message={errors.link} />
+            <FieldError id={`${ids}-link-err`}>{errors.link}</FieldError>
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor={`${ids}-note`} className="font-bold">
+            <Label htmlFor={`${ids}-note`}>
               {c.note}
             </Label>
             <Textarea
@@ -133,7 +125,7 @@ export function SubmitDialog({ bounty, open, onOpenChange }: { bounty: Bounty; o
               <span>{c.noteHint}</span>
               <span className="tabular-nums">{note.trim().length}/600</span>
             </p>
-            <FieldError id={`${ids}-note-err`} message={errors.note} />
+            <FieldError id={`${ids}-note-err`}>{errors.note}</FieldError>
           </div>
           <div className="flex flex-col gap-1.5">
             <div className="flex items-start gap-2.5">
@@ -143,16 +135,15 @@ export function SubmitDialog({ bounty, open, onOpenChange }: { bounty: Bounty; o
                 onCheckedChange={(v) => setCriteria(v === true)}
                 aria-invalid={!!errors.criteria}
                 aria-describedby={`${ids}-criteria-err`}
-                className="mt-0.5"
               />
               <Label htmlFor={`${ids}-criteria`} className="leading-snug">
                 {c.criteria}
               </Label>
             </div>
-            <FieldError id={`${ids}-criteria-err`} message={errors.criteria} />
+            <FieldError id={`${ids}-criteria-err`}>{errors.criteria}</FieldError>
           </div>
-          <TxFeedback state={tx.state} onRetry={() => void send()} />
-          <DialogFooter className="flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <TxFeedback {...txFeedbackProps(tx.state, app.tx)} onRetry={() => void send()} />
+          <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={tx.busy}>
               {c.cancel}
             </Button>
@@ -238,7 +229,7 @@ export function RejectDialog({
     >
       <DialogContent closeLabel={app.close} className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle className="text-xl font-extrabold">{mode === "poster" ? c.title : c.voteTitle}</DialogTitle>
+          <DialogTitle>{mode === "poster" ? c.title : c.voteTitle}</DialogTitle>
           <DialogDescription>{mode === "poster" ? c.description : c.voteDescription}</DialogDescription>
         </DialogHeader>
         <form
@@ -250,7 +241,7 @@ export function RejectDialog({
           className="flex flex-col gap-5"
         >
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor={`${ids}-note`} className="font-bold">
+            <Label htmlFor={`${ids}-note`}>
               {c.note}
             </Label>
             <Textarea
@@ -265,10 +256,10 @@ export function RejectDialog({
             <p id={`${ids}-hint`} className="text-xs text-muted-foreground">
               {c.noteHint}
             </p>
-            <FieldError id={`${ids}-err`} message={error} />
+            <FieldError id={`${ids}-err`}>{error}</FieldError>
           </div>
-          <TxFeedback state={tx.state} onRetry={() => void send()} />
-          <DialogFooter className="flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <TxFeedback {...txFeedbackProps(tx.state, app.tx)} onRetry={() => void send()} />
+          <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={tx.busy}>
               {c.cancel}
             </Button>
@@ -328,13 +319,13 @@ export function CancelDialog({
         onOpenChange(o)
       }}
     >
-      <DialogContent closeLabel={app.close} className="sm:max-w-md">
+      <DialogContent closeLabel={app.close}>
         <DialogHeader>
-          <DialogTitle className="text-xl font-extrabold">{c.title}</DialogTitle>
+          <DialogTitle>{c.title}</DialogTitle>
           <DialogDescription>{t(c.body, { amount })}</DialogDescription>
         </DialogHeader>
-        <TxFeedback state={tx.state} onRetry={() => void send()} />
-        <DialogFooter className="flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+        <TxFeedback {...txFeedbackProps(tx.state, app.tx)} onRetry={() => void send()} />
+        <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={tx.busy}>
             {c.keep}
           </Button>

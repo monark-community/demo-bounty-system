@@ -6,9 +6,13 @@ import { useId, useState, type ReactNode } from "react"
 
 import { Ticket } from "@/components/bounty/ticket"
 import { Button } from "@/components/ui/button"
+import { FieldError } from "@/components/ui/field-error"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { NativeSelect } from "@/components/ui/native-select"
+import { RadioGroup, RadioGroupItem, RadioGroupItemDescription, RadioGroupItemTitle } from "@/components/ui/radio-group"
 import { Textarea } from "@/components/ui/textarea"
+import { TxFeedback } from "@/components/ui/tx-feedback"
 import { href } from "@/i18n/config"
 import { t } from "@/i18n/t"
 import { formatDate, formatRelative, formatToken, formatUnits, plural } from "@/lib/format"
@@ -31,10 +35,8 @@ import {
 } from "@/lib/demo/types"
 import { cn } from "@/lib/utils"
 
-import { useAppCopy } from "./app-provider"
+import { txFeedbackProps, useAppCopy } from "./app-provider"
 import { ConnectCard } from "./app-frame"
-import { NativeSelect } from "./native-select"
-import { TxFeedback } from "./tx-feedback"
 
 interface Draft {
   title: string
@@ -338,58 +340,74 @@ export function Composer() {
           </Section>
 
           <Section title={c.sections.rules}>
-            <fieldset className="flex flex-col gap-2">
-              <legend className="mb-2 text-sm font-bold">{f.visibility}</legend>
-              <div className="grid gap-2 sm:grid-cols-3">
+            <div className="flex flex-col gap-2">
+              <p id={`${uid}-vis`} className="mb-2 text-sm font-bold">
+                {f.visibility}
+              </p>
+              <RadioGroup
+                variant="card"
+                aria-labelledby={`${uid}-vis`}
+                value={draft.visibility}
+                onValueChange={(v) => set("visibility", v as Visibility)}
+                className="sm:grid-cols-3"
+              >
                 {VISIBILITIES.map((x) => (
-                  <RadioCard key={x} name={`${uid}-vis`} checked={draft.visibility === x} onChange={() => set("visibility", x)} title={labels.visibility[x]} />
+                  <RadioGroupItem key={x} value={x}>
+                    <RadioGroupItemTitle>{labels.visibility[x]}</RadioGroupItemTitle>
+                  </RadioGroupItem>
                 ))}
-              </div>
-            </fieldset>
-            <fieldset className="flex flex-col gap-2">
-              <legend className="mb-2 text-sm font-bold">{f.agents}</legend>
-              <div className="grid gap-2 sm:grid-cols-3">
+              </RadioGroup>
+            </div>
+            <div className="flex flex-col gap-2">
+              <p id={`${uid}-agents`} className="mb-2 text-sm font-bold">
+                {f.agents}
+              </p>
+              <RadioGroup
+                variant="card"
+                aria-labelledby={`${uid}-agents`}
+                value={draft.agents}
+                onValueChange={(v) => set("agents", v as AgentPolicy)}
+                className="sm:grid-cols-3"
+              >
                 {AGENT_POLICIES.map((x) => (
-                  <RadioCard
-                    key={x}
-                    name={`${uid}-agents`}
-                    checked={draft.agents === x}
-                    onChange={() => set("agents", x)}
-                    title={labels.agents[x]}
-                    body={f.agentsHints[x]}
-                  />
+                  <RadioGroupItem key={x} value={x}>
+                    <RadioGroupItemTitle>{labels.agents[x]}</RadioGroupItemTitle>
+                    <RadioGroupItemDescription>{f.agentsHints[x]}</RadioGroupItemDescription>
+                  </RadioGroupItem>
                 ))}
-              </div>
+              </RadioGroup>
               {draft.agents !== "humans" ? (
                 <p className="mt-1 flex items-start gap-2 text-xs text-muted-foreground">
                   <ShieldCheckIcon className="mt-px size-4 shrink-0 text-primary" aria-hidden="true" />
                   {f.agentsNote}
                 </p>
               ) : null}
-            </fieldset>
-            <fieldset className="flex flex-col gap-2">
-              <legend className="mb-2 text-sm font-bold">{f.review}</legend>
-              <div className="grid gap-2 sm:grid-cols-2">
-                <RadioCard
-                  name={`${uid}-review`}
-                  checked={draft.review === "poster"}
-                  onChange={() => set("review", "poster")}
-                  title={f.reviewPoster}
-                  body={f.reviewPosterHint}
-                />
-                <RadioCard
-                  name={`${uid}-review`}
-                  checked={draft.review === "validators"}
-                  onChange={() => set("review", "validators")}
-                  title={f.reviewValidators}
-                  body={f.reviewValidatorsHint}
-                />
-              </div>
+            </div>
+            <div className="flex flex-col gap-2">
+              <p id={`${uid}-review`} className="mb-2 text-sm font-bold">
+                {f.review}
+              </p>
+              <RadioGroup
+                variant="card"
+                aria-labelledby={`${uid}-review`}
+                value={draft.review}
+                onValueChange={(v) => set("review", v === "validators" ? "validators" : "poster")}
+                className="sm:grid-cols-2"
+              >
+                <RadioGroupItem value="poster">
+                  <RadioGroupItemTitle>{f.reviewPoster}</RadioGroupItemTitle>
+                  <RadioGroupItemDescription>{f.reviewPosterHint}</RadioGroupItemDescription>
+                </RadioGroupItem>
+                <RadioGroupItem value="validators">
+                  <RadioGroupItemTitle>{f.reviewValidators}</RadioGroupItemTitle>
+                  <RadioGroupItemDescription>{f.reviewValidatorsHint}</RadioGroupItemDescription>
+                </RadioGroupItem>
+              </RadioGroup>
               {draft.review === "validators" ? (
                 <div className="mt-2 flex flex-col gap-2 rounded-2xl border bg-muted/40 p-4 sm:flex-row sm:items-center sm:justify-between">
                   <p className="text-sm">{f.council}</p>
                   <div className="flex items-center gap-2">
-                    <Label htmlFor={`${uid}-quorum`} className="text-sm font-bold">
+                    <Label htmlFor={`${uid}-quorum`}>
                       {f.quorum}
                     </Label>
                     <Select id={`${uid}-quorum`} value={String(draft.quorum)} onChange={(v) => set("quorum", v === "3" ? 3 : 2)}>
@@ -402,7 +420,7 @@ export function Composer() {
                   </div>
                 </div>
               ) : null}
-            </fieldset>
+            </div>
           </Section>
 
           <div className="flex flex-col gap-4 rounded-2xl border-2 border-primary/60 bg-card p-4 sm:p-5">
@@ -417,7 +435,7 @@ export function Composer() {
               <LockIcon aria-hidden="true" />
               {busy ? c.publishing : t(c.publish, { amount: amountText })}
             </Button>
-            <TxFeedback state={tx.state} pendingLabel={c.publishing} onRetry={() => void publish()} onDismiss={() => tx.reset()} />
+            <TxFeedback {...txFeedbackProps(tx.state, app.tx, c.publishing)} onRetry={() => void publish()} onDismiss={() => tx.reset()} />
           </div>
         </form>
 
@@ -464,7 +482,7 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
 function Field({ id, label, hint, error, children }: { id: string; label: string; hint?: string; error?: string; children: ReactNode }) {
   return (
     <div className="flex min-w-0 flex-col gap-1.5">
-      <Label htmlFor={id} className="font-bold">
+      <Label htmlFor={id}>
         {label}
       </Label>
       {children}
@@ -473,11 +491,7 @@ function Field({ id, label, hint, error, children }: { id: string; label: string
           {hint}
         </p>
       ) : null}
-      {error ? (
-        <p id={`${id}-err`} className="text-sm font-semibold text-destructive">
-          {error}
-        </p>
-      ) : null}
+      <FieldError id={`${id}-err`}>{error}</FieldError>
     </div>
   )
 }
@@ -496,25 +510,8 @@ function Select({
   children: ReactNode
 }) {
   return (
-    <NativeSelect id={id} value={value} onChange={(e) => onChange(e.target.value)} aria-describedby={describedBy} className="h-10 w-full">
+    <NativeSelect id={id} value={value} onChange={(e) => onChange(e.target.value)} aria-describedby={describedBy} className="w-full">
       {children}
     </NativeSelect>
-  )
-}
-
-function RadioCard({ name, checked, onChange, title, body }: { name: string; checked: boolean; onChange: () => void; title: string; body?: string }) {
-  return (
-    <label
-      className={cn(
-        "flex cursor-pointer items-start gap-3 rounded-2xl border p-3.5 transition-colors duration-150 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-ring",
-        checked ? "border-primary bg-secondary/60" : "hover:border-input"
-      )}
-    >
-      <input type="radio" name={name} checked={checked} onChange={onChange} className="mt-1 size-4 accent-[var(--primary)]" />
-      <span className="text-sm">
-        <span className="block font-bold">{title}</span>
-        {body ? <span className="mt-0.5 block text-xs text-muted-foreground">{body}</span> : null}
-      </span>
-    </label>
   )
 }
