@@ -6,6 +6,7 @@ import { txFeedbackProps, useAppCopy } from "@/components/demo/app-provider"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { FieldError } from "@/components/ui/field-error"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
@@ -18,15 +19,6 @@ import { getDemo } from "@/lib/demo/store"
 import type { Bounty, Submission } from "@/lib/demo/types"
 
 import { nameOf } from "./ticket-props"
-
-function FieldError({ id, message }: { id: string; message?: string }) {
-  if (!message) return null
-  return (
-    <p id={id} className="text-sm font-semibold text-destructive">
-      {message}
-    </p>
-  )
-}
 
 /** Flow 3: submit work to a bounty. */
 export function SubmitDialog({ bounty, open, onOpenChange }: { bounty: Bounty; open: boolean; onOpenChange: (o: boolean) => void }) {
@@ -115,7 +107,7 @@ export function SubmitDialog({ bounty, open, onOpenChange }: { bounty: Bounty; o
               aria-invalid={!!errors.link}
               aria-describedby={`${ids}-link-err`}
             />
-            <FieldError id={`${ids}-link-err`} message={errors.link} />
+            <FieldError id={`${ids}-link-err`}>{errors.link}</FieldError>
           </div>
           <div className="flex flex-col gap-1.5">
             <Label htmlFor={`${ids}-note`}>
@@ -133,7 +125,7 @@ export function SubmitDialog({ bounty, open, onOpenChange }: { bounty: Bounty; o
               <span>{c.noteHint}</span>
               <span className="tabular-nums">{note.trim().length}/600</span>
             </p>
-            <FieldError id={`${ids}-note-err`} message={errors.note} />
+            <FieldError id={`${ids}-note-err`}>{errors.note}</FieldError>
           </div>
           <div className="flex flex-col gap-1.5">
             <div className="flex items-start gap-2.5">
@@ -148,7 +140,7 @@ export function SubmitDialog({ bounty, open, onOpenChange }: { bounty: Bounty; o
                 {c.criteria}
               </Label>
             </div>
-            <FieldError id={`${ids}-criteria-err`} message={errors.criteria} />
+            <FieldError id={`${ids}-criteria-err`}>{errors.criteria}</FieldError>
           </div>
           <TxFeedback {...txFeedbackProps(tx.state, app.tx)} onRetry={() => void send()} />
           <DialogFooter>
@@ -264,7 +256,7 @@ export function RejectDialog({
             <p id={`${ids}-hint`} className="text-xs text-muted-foreground">
               {c.noteHint}
             </p>
-            <FieldError id={`${ids}-err`} message={error} />
+            <FieldError id={`${ids}-err`}>{error}</FieldError>
           </div>
           <TxFeedback {...txFeedbackProps(tx.state, app.tx)} onRetry={() => void send()} />
           <DialogFooter>

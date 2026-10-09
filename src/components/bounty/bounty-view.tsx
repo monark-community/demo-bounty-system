@@ -8,6 +8,7 @@ import { toast } from "sonner"
 import { txFeedbackProps, useAppCopy } from "@/components/demo/app-provider"
 import { ConnectCard } from "@/components/demo/app-frame"
 import { Button } from "@/components/ui/button"
+import { Empty, EmptyDescription } from "@/components/ui/empty"
 import { InfoTip } from "@/components/ui/info-tip"
 import { TxFeedback } from "@/components/ui/tx-feedback"
 import { WalletAddress, WalletAvatar } from "@/components/ui/wallet"
@@ -195,7 +196,9 @@ export function BountyView({ id }: { id: string }) {
                   ))}
               </ul>
             ) : (
-              <p className="rounded-2xl border border-dashed p-5 text-muted-foreground">{c.submissions.empty}</p>
+              <Empty align="start" size="sm">
+                <EmptyDescription className="text-base">{c.submissions.empty}</EmptyDescription>
+              </Empty>
             )}
           </section>
         </div>

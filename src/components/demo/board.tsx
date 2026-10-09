@@ -8,19 +8,21 @@ import { Ticket } from "@/components/bounty/ticket"
 import { ticketProps } from "@/components/bounty/ticket-props"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Empty, EmptyContent, EmptyDescription } from "@/components/ui/empty"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { NativeSelect } from "@/components/ui/native-select"
+import { Stat, StatGroup, StatHint, StatLabel, StatValue } from "@/components/ui/stat"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { href } from "@/i18n/config"
 import { t } from "@/i18n/t"
 import { formatNumber, formatUsdWhole, plural } from "@/lib/format"
 import { boardSummary, displayStatus, rankOf, submitBlock } from "@/lib/demo/select"
 import { useDemo } from "@/lib/demo/store"
 import { CATEGORIES, type Category } from "@/lib/demo/types"
-import { cn } from "@/lib/utils"
 
 import { useAppCopy } from "./app-provider"
 import { ConnectCard } from "./app-frame"
-import { NativeSelect } from "./native-select"
 
 type StatusFilter = "open" | "closed" | "done" | "all"
 const STATUS_FILTERS: StatusFilter[] = ["open", "closed", "done", "all"]
@@ -85,17 +87,25 @@ export function Board() {
       <h1 className="text-3xl font-extrabold tracking-display sm:text-4xl">{b.title}</h1>
 
       <section aria-label={app.summary.label}>
-        <dl className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-          <Stat label={app.summary.open} value={formatNumber(summary.open, locale)} />
-          <Stat label={app.summary.locked} value={formatUsdWhole(summary.lockedUsd, locale)} title={app.summary.lockedHint} />
-          <Stat
-            label={app.summary.reputation}
-            value={connected && standing ? t(labels.points, { n: formatNumber(standing.reputation, locale) }) : app.summary.notConnected}
-            hint={connected ? t(app.summary.rank, { rank }) : undefined}
-            muted={!connected}
-            className="col-span-2 sm:col-span-1"
-          />
-        </dl>
+        <StatGroup className="grid-cols-2 sm:grid-cols-3 lg:grid-cols-3">
+          <Stat>
+            <StatLabel>{app.summary.open}</StatLabel>
+            <StatValue>{formatNumber(summary.open, locale)}</StatValue>
+          </Stat>
+          <Stat title={app.summary.lockedHint}>
+            <StatLabel>{app.summary.locked}</StatLabel>
+            <StatValue>{formatUsdWhole(summary.lockedUsd, locale)}</StatValue>
+          </Stat>
+          <Stat size={connected ? "default" : "sm"} className="col-span-2 sm:col-span-1">
+            <StatLabel>{app.summary.reputation}</StatLabel>
+            {connected && standing ? (
+              <StatValue>{t(labels.points, { n: formatNumber(standing.reputation, locale) })}</StatValue>
+            ) : (
+              <StatValue className="text-muted-foreground">{app.summary.notConnected}</StatValue>
+            )}
+            {connected ? <StatHint>{t(app.summary.rank, { rank })}</StatHint> : null}
+          </Stat>
+        </StatGroup>
       </section>
 
       {!connected ? <ConnectCard /> : null}
@@ -115,16 +125,20 @@ export function Board() {
             />
           </div>
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-            <fieldset className="min-w-0">
-              <legend className="sr-only">{b.status}</legend>
-              <div className="-mx-1 flex gap-1.5 overflow-x-auto px-1 py-0.5">
-                {STATUS_FILTERS.map((f) => (
-                  <Chip key={f} active={status === f} onClick={() => setStatus(f)}>
-                    {b.statuses[f]}
-                  </Chip>
-                ))}
-              </div>
-            </fieldset>
+            <ToggleGroup
+              type="single"
+              variant="chip"
+              size="sm"
+              aria-label={b.status}
+              value={status}
+              onValueChange={(v) => v && setStatus(v as StatusFilter)}
+            >
+              {STATUS_FILTERS.map((f) => (
+                <ToggleGroupItem key={f} value={f}>
+                  {b.statuses[f]}
+                </ToggleGroupItem>
+              ))}
+            </ToggleGroup>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
               <div className="flex items-center gap-2">
                 <Label htmlFor="board-category" className="font-semibold">
@@ -134,7 +148,7 @@ export function Board() {
                   id="board-category"
                   value={category}
                   onChange={(e) => setCategory(e.target.value as Category | "all")}
-                  className="h-9"
+                  size="sm"
                 >
                   <option value="all">{b.allCategories}</option>
                   {CATEGORIES.map((c) => (
@@ -189,60 +203,22 @@ export function Board() {
           </Button>
         ) : null}
         {list.length ? null : (
-          <div className="flex flex-col items-start gap-3 rounded-2xl border border-dashed p-6">
-            <p className="text-muted-foreground">{demo.bounties.length ? b.emptyFiltered : b.emptyAll}</p>
-            {filtered ? (
-              <Button variant="outline" size="sm" onClick={clear}>
-                {b.clear}
-              </Button>
-            ) : (
-              <Button asChild variant="outline" size="sm">
-                <Link href={href(locale, "/app/new")}>{app.nav.post}</Link>
-              </Button>
-            )}
-          </div>
+          <Empty align="start" size="sm" role="status">
+            <EmptyDescription className="text-base">{demo.bounties.length ? b.emptyFiltered : b.emptyAll}</EmptyDescription>
+            <EmptyContent>
+              {filtered ? (
+                <Button variant="outline" size="sm" onClick={clear}>
+                  {b.clear}
+                </Button>
+              ) : (
+                <Button asChild variant="outline" size="sm">
+                  <Link href={href(locale, "/app/new")}>{app.nav.post}</Link>
+                </Button>
+              )}
+            </EmptyContent>
+          </Empty>
         )}
       </section>
     </div>
-  )
-}
-
-function Stat({
-  label,
-  value,
-  hint,
-  title,
-  muted,
-  className,
-}: {
-  label: string
-  value: string
-  hint?: string
-  title?: string
-  muted?: boolean
-  className?: string
-}) {
-  return (
-    <div title={title} className={cn("flex flex-col gap-1 rounded-2xl border bg-card p-4", className)}>
-      <dt className="text-xs font-semibold text-muted-foreground">{label}</dt>
-      <dd className={cn("text-xl font-extrabold tabular-nums sm:text-2xl", muted && "text-base text-muted-foreground sm:text-base")}>{value}</dd>
-      {hint ? <dd className="text-xs text-muted-foreground">{hint}</dd> : null}
-    </div>
-  )
-}
-
-export function Chip({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
-  return (
-    <button
-      type="button"
-      aria-pressed={active}
-      onClick={onClick}
-      className={cn(
-        "inline-flex h-9 shrink-0 items-center rounded-full border px-3.5 text-sm font-semibold transition-colors duration-150",
-        active ? "border-foreground bg-foreground text-background" : "border-input text-muted-foreground hover:text-foreground"
-      )}
-    >
-      {children}
-    </button>
   )
 }
