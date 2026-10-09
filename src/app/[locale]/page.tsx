@@ -18,7 +18,7 @@ import { AgentBadge } from "@/components/bounty/agent-badge"
 import { Ticket } from "@/components/bounty/ticket"
 import { ticketProps } from "@/components/bounty/ticket-props"
 import { HeroTicket } from "@/components/home/hero-ticket"
-import { SectionDivider } from "@/components/site/section-divider"
+import { SectionDivider } from "@/components/ui/section-divider"
 import { Button } from "@/components/ui/button"
 import { WalletAvatar } from "@/components/ui/wallet"
 import { href, isLocale } from "@/i18n/config"
@@ -216,7 +216,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
         </div>
       </section>
 
-      <SectionDivider className="pt-16 lg:pt-20" />
+      <SectionDivider contained className="pt-16 lg:pt-20" />
 
       {/* Who */}
       <section aria-labelledby="who-title" className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6 lg:py-20">

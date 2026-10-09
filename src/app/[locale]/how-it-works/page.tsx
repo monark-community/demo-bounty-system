@@ -20,7 +20,7 @@ import { notFound } from "next/navigation"
 
 import { EscrowDiagram } from "@/components/diagrams/escrow-diagram"
 import { QuorumDiagram } from "@/components/diagrams/quorum-diagram"
-import { SectionDivider } from "@/components/site/section-divider"
+import { SectionDivider } from "@/components/ui/section-divider"
 import { Button } from "@/components/ui/button"
 import { href, isLocale } from "@/i18n/config"
 import { getDictionary } from "@/i18n"
@@ -218,7 +218,7 @@ export default async function HowItWorksPage({ params }: PageProps<"/[locale]/ho
         </div>
       </section>
 
-      <SectionDivider className="pt-16" />
+      <SectionDivider contained className="pt-16" />
 
       <section aria-labelledby="devs-title" className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6">
         <h2 id="devs-title" className="text-3xl font-bold tracking-display sm:text-[2rem]">
