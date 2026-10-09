@@ -63,11 +63,11 @@ src/
   app/[locale]/             Locale routes (en, fr): home, how-it-works, credits, pricing (unlinked), 404
   app/[locale]/app/         The demo: board, bounty/[id], new, you, leaderboard
   components/bounty/        Ticket, escrow rail, vote tally, bounty page, dialogs
-  components/demo/          App frame, board, composer, your work, leaderboard, wallet prompt, demo controls
+  components/demo/          App frame and provider, board, composer, your work, leaderboard
   components/home/          Hero lifecycle ticket
   components/diagrams/      Escrow and quorum line art
-  components/site/          Standard Monark header, footer, locale switch, theme
-  components/ui/            shadcn/ui components from the Monark UI registry
+  components/site/          Header and footer wiring for the @monark/ui site shell
+  components/ui/            @monark/ui 2 registry items, kept identical to the registry
   i18n/                     Typed EN and FR dictionaries
   lib/demo/                 Simulated chain, wallet and data layer
   proxy.ts                  Redirects / to the visitor's language
