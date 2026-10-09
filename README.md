@@ -18,7 +18,7 @@ Every transaction goes through a wallet prompt, a pending state with a hash, the
 
 ## Run it locally
 
-Requirements: Node 22 and pnpm 10.
+Requirements: Node 24 and pnpm 10.
 
 ```bash
 pnpm install
