@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { TxFeedback } from "@/components/ui/tx-feedback"
 import { href } from "@/i18n/config"
 import { t } from "@/i18n/t"
 import { formatDate, formatRelative, formatToken, formatUnits, plural } from "@/lib/format"
@@ -31,10 +32,9 @@ import {
 } from "@/lib/demo/types"
 import { cn } from "@/lib/utils"
 
-import { useAppCopy } from "./app-provider"
+import { txFeedbackProps, useAppCopy } from "./app-provider"
 import { ConnectCard } from "./app-frame"
 import { NativeSelect } from "./native-select"
-import { TxFeedback } from "./tx-feedback"
 
 interface Draft {
   title: string
@@ -417,7 +417,7 @@ export function Composer() {
               <LockIcon aria-hidden="true" />
               {busy ? c.publishing : t(c.publish, { amount: amountText })}
             </Button>
-            <TxFeedback state={tx.state} pendingLabel={c.publishing} onRetry={() => void publish()} onDismiss={() => tx.reset()} />
+            <TxFeedback {...txFeedbackProps(tx.state, app.tx, c.publishing)} onRetry={() => void publish()} onDismiss={() => tx.reset()} />
           </div>
         </form>
 

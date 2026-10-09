@@ -4,15 +4,20 @@ import { Loader2Icon, PlusIcon, WalletIcon, XCircleIcon } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import type { ReactNode } from "react"
+import { toast } from "sonner"
 
+import { AppLoading } from "@/components/ui/app-loading"
+import { AppTabs } from "@/components/ui/app-tabs"
 import { Button } from "@/components/ui/button"
+import { DemoControls, DemoControlsToggle } from "@/components/ui/demo-controls"
 import { href } from "@/i18n/config"
+import { setAmbassador } from "@/lib/demo/ops"
 import { waitingOnYou } from "@/lib/demo/select"
-import { useDemo, useStorageOk } from "@/lib/demo/store"
+import { resetDemo, setSettings, useDemo, useStorageOk } from "@/lib/demo/store"
+import { NETWORK_NAME } from "@/lib/demo/tokens"
 import { cn } from "@/lib/utils"
 
 import { useAppCopy } from "./app-provider"
-import { DemoControls } from "./demo-controls"
 import { useConnect } from "./use-connect"
 
 /**
@@ -42,47 +47,57 @@ export function AppFrame({ children }: { children: ReactNode }) {
 }
 
 function AppBar() {
-  const { app, locale } = useAppCopy()
+  const { app, seed, locale } = useAppCopy()
   const demo = useDemo()
   const pathname = usePathname() ?? ""
   const n = app.nav
+  const c = app.controls
+  const ambassador = demo?.people.find((p) => p.id === demo.youId)?.roles.includes("ambassador") ?? false
   const base = href(locale, "/app")
   const waiting = demo && demo.wallet.status === "connected" ? waitingOnYou(demo).reduce((sum, w) => sum + w.count, 0) : 0
-  const items = [
-    { href: base, label: n.board, active: pathname === base || pathname.startsWith(`${base}/bounty`) },
-    { href: `${base}/you`, label: n.you, active: pathname.startsWith(`${base}/you`), count: waiting },
-    { href: `${base}/leaderboard`, label: n.leaderboard, active: pathname.startsWith(`${base}/leaderboard`) },
-  ]
   const postActive = pathname.startsWith(`${base}/new`)
 
   return (
-    <div className="border-b bg-secondary/40">
-      <div className="mx-auto flex min-h-13 max-w-6xl items-center gap-1.5 px-4 sm:gap-2 sm:px-6">
-        <nav aria-label={n.label} className="min-w-0 flex-1">
-          <ul className="-mx-1 flex min-w-0 items-center gap-0.5 overflow-x-auto px-1 py-2 [scrollbar-width:none] sm:gap-1">
-            {items.map((item) => (
-              <li key={item.href} className="shrink-0">
-                <Link
-                  href={item.href}
-                  aria-current={item.active ? "page" : undefined}
-                  className={cn(
-                    "inline-flex h-9 items-center gap-1.5 rounded-full px-2 text-sm font-semibold transition-colors duration-150 sm:px-3.5",
-                    item.active ? "bg-card text-foreground ring-1 ring-border" : "text-muted-foreground hover:text-foreground"
-                  )}
-                >
-                  {item.label}
-                  {item.count ? (
-                    <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[0.6875rem] font-extrabold text-primary-foreground">
-                      {item.count}
-                    </span>
-                  ) : null}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
-        <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
-          <DemoControls />
+    <AppTabs
+      label={n.label}
+      pathname={pathname}
+      LinkComponent={Link}
+      tabs={[
+        // The board tab also owns the bounty pages.
+        { href: base, label: n.board, active: pathname === base || pathname.startsWith(`${base}/bounty`) },
+        { href: `${base}/you`, label: n.you, count: waiting },
+        { href: `${base}/leaderboard`, label: n.leaderboard },
+      ]}
+      actions={
+        <>
+          {demo ? (
+            <DemoControls
+              networkName={NETWORK_NAME}
+              slow={demo.settings.slow}
+              onSlowChange={(v) => setSettings({ slow: v })}
+              failNext={demo.settings.failNext}
+              onFailNextChange={(v) => setSettings({ failNext: v })}
+              onReset={() => {
+                resetDemo(seed, locale)
+                toast.success(c.resetDone)
+              }}
+              title={c.title}
+              openLabel={c.open}
+              slowLabel={c.slow}
+              slowHint={c.slowHint}
+              failNextLabel={c.failNext}
+              failNextHint={c.failNextHint}
+              resetLabel={c.reset}
+              resetHint={c.resetHint}
+              resetConfirmTitle={c.resetConfirm}
+              resetConfirmBody={c.resetConfirmBody}
+              resetConfirmLabel={c.resetDo}
+              cancelLabel={c.cancel}
+              closeLabel={app.close}
+            >
+              <DemoControlsToggle label={c.ambassador} hint={c.ambassadorHint} checked={ambassador} onCheckedChange={(v) => setAmbassador(v)} />
+            </DemoControls>
+          ) : null}
           {!postActive ? (
             <Button asChild size="sm" className="px-2.5 sm:px-3">
               <Link href={`${base}/new`}>
@@ -92,25 +107,9 @@ function AppBar() {
               </Link>
             </Button>
           ) : null}
-        </div>
-      </div>
-    </div>
-  )
-}
-
-export function AppLoading({ label }: { label: string }) {
-  return (
-    <div role="status" aria-live="polite" className="flex flex-col gap-4">
-      <span className="sr-only">{label}</span>
-      <div className="h-9 w-56 animate-pulse rounded-full bg-muted" />
-      <div className="grid gap-3 sm:grid-cols-4">
-        {[0, 1, 2, 3].map((i) => (
-          <div key={i} className="h-24 animate-pulse rounded-2xl bg-muted" />
-        ))}
-      </div>
-      <div className="h-28 animate-pulse rounded-2xl bg-muted" />
-      <div className="h-28 animate-pulse rounded-2xl bg-muted" />
-    </div>
+        </>
+      }
+    />
   )
 }
 

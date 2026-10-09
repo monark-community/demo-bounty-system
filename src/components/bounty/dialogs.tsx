@@ -2,14 +2,14 @@
 
 import { useId, useState } from "react"
 
-import { useAppCopy } from "@/components/demo/app-provider"
-import { TxFeedback } from "@/components/demo/tx-feedback"
+import { txFeedbackProps, useAppCopy } from "@/components/demo/app-provider"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { TxFeedback } from "@/components/ui/tx-feedback"
 import { t } from "@/i18n/t"
 import { formatToken } from "@/lib/format"
 import { useTx } from "@/lib/demo/chain"
@@ -150,7 +150,7 @@ export function SubmitDialog({ bounty, open, onOpenChange }: { bounty: Bounty; o
             </div>
             <FieldError id={`${ids}-criteria-err`} message={errors.criteria} />
           </div>
-          <TxFeedback state={tx.state} onRetry={() => void send()} />
+          <TxFeedback {...txFeedbackProps(tx.state, app.tx)} onRetry={() => void send()} />
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={tx.busy}>
               {c.cancel}
@@ -266,7 +266,7 @@ export function RejectDialog({
             </p>
             <FieldError id={`${ids}-err`} message={error} />
           </div>
-          <TxFeedback state={tx.state} onRetry={() => void send()} />
+          <TxFeedback {...txFeedbackProps(tx.state, app.tx)} onRetry={() => void send()} />
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={tx.busy}>
               {c.cancel}
@@ -332,7 +332,7 @@ export function CancelDialog({
           <DialogTitle>{c.title}</DialogTitle>
           <DialogDescription>{t(c.body, { amount })}</DialogDescription>
         </DialogHeader>
-        <TxFeedback state={tx.state} onRetry={() => void send()} />
+        <TxFeedback {...txFeedbackProps(tx.state, app.tx)} onRetry={() => void send()} />
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={tx.busy}>
             {c.keep}
