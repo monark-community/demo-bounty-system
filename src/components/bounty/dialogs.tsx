@@ -87,9 +87,9 @@ export function SubmitDialog({ bounty, open, onOpenChange }: { bounty: Bounty; o
         onOpenChange(o)
       }}
     >
-      <DialogContent closeLabel={app.close} className="max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-lg">
+      <DialogContent closeLabel={app.close} className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle className="text-xl font-extrabold">{c.title}</DialogTitle>
+          <DialogTitle>{c.title}</DialogTitle>
           <DialogDescription className="sr-only">{c.description}</DialogDescription>
         </DialogHeader>
         <form
@@ -101,7 +101,7 @@ export function SubmitDialog({ bounty, open, onOpenChange }: { bounty: Bounty; o
           className="flex flex-col gap-5"
         >
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor={`${ids}-link`} className="font-bold">
+            <Label htmlFor={`${ids}-link`}>
               {c.link}
             </Label>
             <Input
@@ -118,7 +118,7 @@ export function SubmitDialog({ bounty, open, onOpenChange }: { bounty: Bounty; o
             <FieldError id={`${ids}-link-err`} message={errors.link} />
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor={`${ids}-note`} className="font-bold">
+            <Label htmlFor={`${ids}-note`}>
               {c.note}
             </Label>
             <Textarea
@@ -143,7 +143,6 @@ export function SubmitDialog({ bounty, open, onOpenChange }: { bounty: Bounty; o
                 onCheckedChange={(v) => setCriteria(v === true)}
                 aria-invalid={!!errors.criteria}
                 aria-describedby={`${ids}-criteria-err`}
-                className="mt-0.5"
               />
               <Label htmlFor={`${ids}-criteria`} className="leading-snug">
                 {c.criteria}
@@ -152,7 +151,7 @@ export function SubmitDialog({ bounty, open, onOpenChange }: { bounty: Bounty; o
             <FieldError id={`${ids}-criteria-err`} message={errors.criteria} />
           </div>
           <TxFeedback state={tx.state} onRetry={() => void send()} />
-          <DialogFooter className="flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={tx.busy}>
               {c.cancel}
             </Button>
@@ -238,7 +237,7 @@ export function RejectDialog({
     >
       <DialogContent closeLabel={app.close} className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle className="text-xl font-extrabold">{mode === "poster" ? c.title : c.voteTitle}</DialogTitle>
+          <DialogTitle>{mode === "poster" ? c.title : c.voteTitle}</DialogTitle>
           <DialogDescription>{mode === "poster" ? c.description : c.voteDescription}</DialogDescription>
         </DialogHeader>
         <form
@@ -250,7 +249,7 @@ export function RejectDialog({
           className="flex flex-col gap-5"
         >
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor={`${ids}-note`} className="font-bold">
+            <Label htmlFor={`${ids}-note`}>
               {c.note}
             </Label>
             <Textarea
@@ -268,7 +267,7 @@ export function RejectDialog({
             <FieldError id={`${ids}-err`} message={error} />
           </div>
           <TxFeedback state={tx.state} onRetry={() => void send()} />
-          <DialogFooter className="flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={tx.busy}>
               {c.cancel}
             </Button>
@@ -328,13 +327,13 @@ export function CancelDialog({
         onOpenChange(o)
       }}
     >
-      <DialogContent closeLabel={app.close} className="sm:max-w-md">
+      <DialogContent closeLabel={app.close}>
         <DialogHeader>
-          <DialogTitle className="text-xl font-extrabold">{c.title}</DialogTitle>
+          <DialogTitle>{c.title}</DialogTitle>
           <DialogDescription>{t(c.body, { amount })}</DialogDescription>
         </DialogHeader>
         <TxFeedback state={tx.state} onRetry={() => void send()} />
-        <DialogFooter className="flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+        <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={tx.busy}>
             {c.keep}
           </Button>

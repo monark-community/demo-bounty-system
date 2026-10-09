@@ -127,7 +127,7 @@ export function Board() {
             </fieldset>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
               <div className="flex items-center gap-2">
-                <Label htmlFor="board-category" className="text-sm font-semibold">
+                <Label htmlFor="board-category" className="font-semibold">
                   {b.category}
                 </Label>
                 <NativeSelect
@@ -146,14 +146,14 @@ export function Board() {
               </div>
               <div className="flex min-h-9 items-center gap-2">
                 <Checkbox id="board-agents" checked={agentsOk} onCheckedChange={(v) => setAgentsOk(v === true)} />
-                <Label htmlFor="board-agents" className="text-sm font-semibold">
+                <Label htmlFor="board-agents" className="font-semibold">
                   {b.agents}
                 </Label>
               </div>
               {connected ? (
                 <div className="flex min-h-9 items-center gap-2">
                   <Checkbox id="board-mine" checked={mine} onCheckedChange={(v) => setMine(v === true)} />
-                  <Label htmlFor="board-mine" className="text-sm font-semibold">
+                  <Label htmlFor="board-mine" className="font-semibold">
                     {b.canSubmit}
                   </Label>
                 </div>

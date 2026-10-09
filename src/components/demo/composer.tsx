@@ -389,7 +389,7 @@ export function Composer() {
                 <div className="mt-2 flex flex-col gap-2 rounded-2xl border bg-muted/40 p-4 sm:flex-row sm:items-center sm:justify-between">
                   <p className="text-sm">{f.council}</p>
                   <div className="flex items-center gap-2">
-                    <Label htmlFor={`${uid}-quorum`} className="text-sm font-bold">
+                    <Label htmlFor={`${uid}-quorum`}>
                       {f.quorum}
                     </Label>
                     <Select id={`${uid}-quorum`} value={String(draft.quorum)} onChange={(v) => set("quorum", v === "3" ? 3 : 2)}>
@@ -464,7 +464,7 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
 function Field({ id, label, hint, error, children }: { id: string; label: string; hint?: string; error?: string; children: ReactNode }) {
   return (
     <div className="flex min-w-0 flex-col gap-1.5">
-      <Label htmlFor={id} className="font-bold">
+      <Label htmlFor={id}>
         {label}
       </Label>
       {children}
