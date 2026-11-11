@@ -5,7 +5,9 @@
   "description": "TaskFlow by Monark: a bounty board where rewards are locked in escrow and paid on approval (simulated testnet demo).",
   "scripts": {
     "dev": "next dev",
+    "prebuild": "node scripts/check-node.mjs",
     "build": "next build",
+    "prestart": "node scripts/check-node.mjs",
     "start": "next start",
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit",

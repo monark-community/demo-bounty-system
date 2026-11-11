@@ -18,7 +18,7 @@ Every transaction goes through a wallet prompt, a pending state with a hash, the
 
 ## Run it locally
 
-Requirements: Node 22 and pnpm 10.
+Requirements: Node 22.23.4 or newer on the 22 line and pnpm 10.
 
 ```bash
 pnpm install
@@ -81,7 +81,7 @@ Stack: Next.js 16 (App Router), TypeScript strict, Tailwind CSS v4, shadcn/ui on
 
 ## Deploy to Vercel
 
-Import the repository in Vercel and keep the defaults (framework Next.js, `pnpm install`, `pnpm build`). No `vercel.json` or environment variables are required; every page prerenders. The Node version comes from `engines` in `package.json`.
+Import the repository in Vercel and keep the defaults (framework Next.js, `pnpm install`, `pnpm build`). No `vercel.json` or environment variables are required; every page prerenders. The Node version comes from `engines` in `package.json`. `pnpm build` and `pnpm start` stop on a Node release exposed to CVE-2026-111497.
 
 ## Licence and credits
 
